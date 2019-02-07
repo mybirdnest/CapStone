@@ -1,0 +1,148 @@
+---
+title: "Capstone Project Ideas"
+author: "Herman Toeante"
+output:
+  html_document: default
+  pdf_document: default
+---  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```  
+
+####Inpatient charge data
+
+What is the problem you want to solve?
+
+  + I am curious about the comparison between average medicare payment charged by each hospital locally and nationwide.
+
+Who is your client and why do they care about this problem?
+   
+  + Hospital, health care provider, patients, and citizen. We have all heard about how one accident that requires surgery can break someone financial life.  One hospital can charge way more than others for the same procedure.
+
+What data are you going to use for this? How will you acquire this data?
+  
+   * [Medicare Provider Charge data](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Inpatient.html)
+
+In brief, outline your approach to solving this problem (knowing that this might change later)
+  
+   + Descriptive statistics such as box plot, histogram, scatter plot
+   + Regression model
+
+What are your deliverables? Typically, this would include code, along with a paper and/or a slide deck
+  
+   + The deliverables will be an R script code containing the code used for data wrangling, data
+   exploration and regression model.
+
+   + The paper will be data story and visualization exploring other external factors 
+
+   + A slide deck power point presentation 
+   
+
+####NYC Citibike sharing
+
+What is the problem you want to solve?
+   
+   + I am curious about the bike sharing economy.  I want to find out where do the bikers ride, 
+   when, how far, which is the most popular station, average bike sharing cost, etc. 
+
+Who is your client and why do they care about this problem? 
+
+   + City of NY, Citibike, Lime bike, BIRD, future entrepreneur who wants to build a business about bicycle sharing 
+   
+What data are you going to use for this? How will you acquire this data?
+  
+   + [Citibike NYC Data](https://www.citibikenyc.com/system-data)
+
+In brief, outline your approach to solving this problem (knowing that this might change later)
+
+   Multiple linear regression model that will explore different variables 
+
+  + The data provided here include per station data such as empty slots, number of available
+   bikes, location information, and gender.  
+
+* Such variables would include:
+
+    + Empty slot
+    + Number of available bikes
+    + Location information
+    + Gender
+    + Distance
+    + Time
+    
+What are your deliverables? Typically, this would include code, along with a paper and/or a slide deck
+
+   + The deliverables will be an R script code containing the code used for data wrangling, data
+   exploration and regression model.
+
+   + The paper will be data story and visualization exploring other external factors 
+
+   + A slide deck power point presentation 
+   
+####3. Predicting global food price
+
+What is the problem you want to solve?
+
+   + I am curious to use the data to predict future food price.  
+
+Who is your client and why do they care about this problem? 
+
+   + UN food program
+
+What data are you going to use for this? How will you acquire this data?
+
+   + The data provided here is done by UN World Food Programme.  The group collect and publishes    food price data for more than 1,000 towns and cities in more than 70 countries.
+
+   + [WFP Food price data](https://data.humdata.org/dataset/wfp-food-prices)
+
+In brief, outline your approach to solving this problem (knowing that this might change later)
+
+   + Descriptive statistics such as box plot, histogram, scatter plot
+
+What are your deliverables? Typically, this would include code, along with a paper and/or a slide deck
+
+   + The deliverables will be an R script code containing the code used for data wrangling, data
+   exploration and regression model.
+
+   + The paper will be data story and visualization exploring other external factors 
+
+   + A slide deck power point presentation 
+   
+
+####4. Austin Health Inspection Report
+
+
+What is the problem you want to solve?
+
++ With limited number of staff, the city of Austin health inspector need to do at least 2 annual inspections at nearly > 10,000 food establishments across the city.  The majority of these food inspections were routine inspections that don't uncover serious problems, but some of these inspections uncovered issues that affect the health and safety of the patrons who visit these establishments. Traditionally, prioritizing these inspections is a largely manual task that relies on a combination of administrative processes and personal expertise. 
+
+Who is your client and why do they care about this problem? 
+
++ City of Austin Health Dept, Austin residents
+
+What data are you going to use for this? How will you acquire this data?
+
+* Using data and analytic model, I am curious if we can create a better way to predict food establishment that will likely to fail the inspection in the future.  This way, we can prioritize the health inspector inspection list. 
+
+  [1. Food Establishment Inspection Score](https://data.austintexas.gov/Health-and-Community-Services/Food-Establishment-Inspection-Scores/ecmv-9xxi)
+
+  [2. Active food establishment with alcohol and beverage license data](https://data.texas.gov/Government-and-Taxes/Mixed-Beverage-Gross-Receipts/naix-2893/data)
+
+
+In brief, outline your approach to solving this problem (knowing that this might change later)
+
+   + Descriptive statistics such as box plot, histogram, scatter plot
+   + Regression model
+
+What are your deliverables? Typically, this would include code, along with a paper and/or a slide deck
+
+   + The deliverables will be an R script code containing the code used for data wrangling, data
+   exploration and regression model.
+
+   + The paper will be data story and visualization exploring other external factors 
+
+   + A slide deck power point presentation 
+ 
+
+
+
