@@ -12,7 +12,7 @@
   
 ### What data are you going to use for this? How will you acquire this data?
 
-  * The data comes from IBM Watson analytic sample data. (https://community.watsonanalytics.com/wp-content/uploads/2015/04/WA_Fn-UseC_-Sales-Win-Loss.csv) 
+  * Data used to develop the model is stored in the ./DATA directory. The data comes from IBM Watson analytic sample data. (https://community.watsonanalytics.com/wp-content/uploads/2015/04/WA_Fn-UseC_-Sales-Win-Loss.csv) 
   The csv file contain ~78K row of data. Each row represents sales opportunity for four supplies group; Car Accessories, Car Electronic, Performance & Non-auto, Tires & Wheels.
   
   
