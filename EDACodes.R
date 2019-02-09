@@ -7,7 +7,10 @@ library(ggplot2)
 library(broom)
 
 # Read the data from ./DATA folder
-sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+#sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+
+sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+
 
 # Review the data in general
 glimpse(sales_win_loss, give.attr = FALSE)
