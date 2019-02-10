@@ -1,9 +1,6 @@
 
 library(tidyverse)
 library(caret)
-library(readr)
-library(dplyr)
-library(ggplot2)
 library(broom)
 
 # Read the data from ./DATA folder
@@ -58,7 +55,8 @@ sales_win_loss <- sales_win_loss %>%
     Revenue == 3 ~ "$400K<=Rev<$1.5M",
     Revenue == 4 ~ "Rev>=$1.5M"))
 
-# Cluster bar chart: Revenue vs Result last two years
+# 1. Cluster bar chart: Revenue vs Result last two years
+
 position <- c("Rev>=$1.5M","$400K<=Rev<$1.5M","$50K<=Rev<$400K","$1<=Rev<$50K","Rev=$0")
 ggplot(sales_win_loss) + geom_bar(aes(x = Revenue2, fill = Result), position = "fill") +
   scale_x_discrete(limits = position) + scale_y_continuous(labels = scales::percent_format()) + 
@@ -69,23 +67,185 @@ ggplot(sales_win_loss) + geom_bar(aes(x = Revenue2, fill = Result), position = "
 # in the last two years. If client purchase in the last two years, the chance of win decreases as sales deals rises
 
 
-# Cluster bar chart: Opportunity amount compare by Region and Result
+# 2. Bar chart: follow up from no 2, Compare by Region, Route, and Result 
+
+sales_win_loss %>% 
+  group_by(Region, Route) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Region, y = SumResult, fill = Route)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Market Opportunity by Region and Route last two years") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# sales opportunity across all regions
+
+# 3. Bar chart: Opportunity amount compare by Region and Result
 
 sales_win_loss %>% 
   group_by(Region, Result) %>% 
-  summarise(SumResult = Sum(Opportunity))
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Region, y = SumResult, fill = Result)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$"))
 
-ggplot(sales_win_loss) + geom_bar(aes(x = Region, Y = SumResult, fill = Result), stat = "identity")
+# reorder the chart based on max SumResult, Y axis label make it $100M - $2B??
+# Conclusion: Plenty of loss $ opportunity across all regions especially in Midwest and Pacific region.
+# Loss $ opportunity in Midwest and Pacific is ~1.3B each.  These two regions also contribute the biggest $ win
+# in the range of $300M - $350M.
+# Other region also show loss $ opportunity in the range of $500M - $700M.  
+# The sales team on each region need to get busy and understand the loss oppportunity. The following charts
+# will explore loss opportunity for each region by route
+
+
+# 4. Bar chart: follow up from no 2, Compare by Route and Result 
+# where Region = Mid-Atlantic and Result = Loss
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                  labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Mid-Atlantic by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# $ Opportunity loss. In the Mid-Atlantic region, in field sales, "Shelters & RV" and "Batteries & 
+# Accessories", and "Exterior Accessories" are the main areas to focus.  
+# The sales team in this region should focus their sales effort on these three buckets.
+
+
+# 5. Bar chart: follow up from no 2, Compare by Route and Result 
+# where Region = Midwest and Result = Loss
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Midwest by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# $ Opportunity loss. In the Midwest region, in field sales, "Shelters & RV" and "Batteries & 
+# Accessories", and "Exterior Accessories" are the main areas to focus.  
+# The sales team in this region should focus their sales effort on these three buckets.
+
+
+# 6. Bar chart: follow up from no 2, Compare by Route and Result 
+# where Region = Northeast and Result = Loss
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Northeast by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# $ Opportunity loss. In the Northeast region, in field sales, "Shelters & RV" and "Batteries & 
+# Accessories", and "Exterior Accessories" are the main areas to focus.  
+# The sales team in this region should focus their sales effort on these three buckets.
+
+
+# 7. Bar chart: follow up from no 2, Compare by Route and Result 
+# where Region = Northwest and Result = Loss
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Northwest by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# $ Opportunity loss. In the Northwest region, in field sales, "Shelters & RV" and "Batteries & 
+# Accessories", and "Exterior Accessories" are the main areas to focus.  
+# The sales team in this region should focus their sales effort on these three buckets.
+
+
+# 8. Bar chart: follow up from no 2, Compare by Route and Result 
+# where Region = Pacific and Result = Loss
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Pacific by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Quite similar to Pacific, Field sales and reseller are the biggest sales chanel that 
+# contribute to a lot of $ Opprotunity loss. However, the "Other" bucket is also something to pay attention to
+# We didn't see this in the other regions as an issue. 
+# Looking at the SuppliesSubgroup, in field sales, "Shelters & RV", "Batteries & Accessories", and
+# "Exterior Accessories" are the three big main areas to focus.  
+
+
+# 9. Bar chart: follow up from no 2, Compare by Route and Result 
+# where Region = Southeast and Result = Loss
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Southeast by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# $ Opportunity loss. In the Southeast region, in field sales, "Shelters & RV" and "Batteries & 
+# Accessories", and "Exterior Accessories" are the main areas to focus.  
+# The sales team in this region should focus their sales effort on these three buckets.
+
+# 10. Bar chart: follow up from no 2, Compare by Route and Result 
+# where Region = Southwest and Result = Loss
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Southwest by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# $ Opportunity loss. In the Southwest region, in field sales, "Shelters & RV" and "Batteries & 
+# Accessories", and "Exterior Accessories" are the main areas to focus.  
+# The sales team in this region should focus their sales effort on these three buckets.
 
 
 
 
-# Cluster bar chart: Opportunity amount compare by Supplies Group and Result
-ggplot(sales_win_loss) + geom_bar(aes(x = SuppliesGroup, Y = Opportunity, fill = Result), stat = "identity")
 
 
-# Cluster bar chart: Opportunity amount compare by Region and Result
-ggplot(sales_win_loss) + geom_bar(aes(x = Region, fill = Result), stat = "identity")
+# 11. Scater chart: 
+
+sales_win_loss %>% 
+  group_by(Result, SuppliesSubgroup) %>% 
+  summarise(Avg = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
+                                                   labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Southwest by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# $ Opportunity loss. In the Southwest region, in field sales, "Shelters & RV" and "Batteries & 
+# Accessories", and "Exterior Accessories" are the main areas to focus.  
+# The sales team in this region should focus their sales effort on these three buckets.
+
 
 
 
@@ -102,6 +262,9 @@ ggplot(sales_win_loss) + geom_bar(aes(x = Region, fill = Result), stat = "identi
 # Use RMarkdown
 # Add some comments on the script or analysis. 
 # Add comment for each chart you show
+
+
+
 
 
 glimpse(sales_win_loss2)
