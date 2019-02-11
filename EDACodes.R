@@ -4,7 +4,7 @@ library(caret)
 library(broom)
 
 # Read the data from ./DATA folder
-#sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+# sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
 sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
@@ -18,13 +18,14 @@ head(sales_win_loss[, 14:19])
 # Check for missing values
 map_dbl(sales_win_loss, ~sum(is.na(.)))
 
-# Set Standard chart theme
+# Conclusion: No Missing values are identified from the data
 
+
+# Set Standard chart theme
 theme_set(theme_classic() + theme(legend.position = "bottom"))
 
 
 # Data Dictionary
-
 var_descriptions <- c(
   "A random number assigned to the opportunity",
   "Supplies Subgroup",
@@ -51,7 +52,6 @@ var_type <- unlist(map(sales_win_loss, class))
 var_type <- var_type [-4] 
 as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
 
-# Conclusion: No Missing values are identified from the data
 
 # Rename the long columns name to make it easier
 colnames(sales_win_loss)<- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
@@ -89,7 +89,6 @@ sales_win_loss <- sales_win_loss %>%
 
 
 # 1.
-
 position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K", "$400K<=Rev<$1.5M", "Rev>=$1.5M")
 ggplot(sales_win_loss, aes(x = Revenue2, fill = Result)) + geom_bar() + scale_x_discrete(limits = position)
 
@@ -97,7 +96,6 @@ ggplot(sales_win_loss, aes(x = Revenue2, fill = Result)) + geom_bar() + scale_x_
 
 
 # 2. Cluster bar chart: Revenue vs Result last two years
-
 position <- c("Rev>=$1.5M","$400K<=Rev<$1.5M","$50K<=Rev<$400K","$1<=Rev<$50K","Rev=$0")
 ggplot(sales_win_loss) + geom_bar(aes(x = Revenue2, fill = Result), position = "fill") +
   scale_x_discrete(limits = position) + scale_y_continuous(labels = scales::percent_format()) + 
@@ -109,7 +107,6 @@ ggplot(sales_win_loss) + geom_bar(aes(x = Revenue2, fill = Result), position = "
 
 
 # 3. Bar chart: follow up from no 2, Compare by Region, Route, and Result 
-
 sales_win_loss %>% 
   group_by(Region, Route) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -124,7 +121,6 @@ sales_win_loss %>%
 
 
 # 4. Bar chart: Opportunity amount compare by Region and Result
-
 sales_win_loss %>% 
   group_by(Region, Result) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -143,7 +139,6 @@ sales_win_loss %>%
 
 # 5. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Mid-Atlantic and Result = Loss
-
 sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -161,7 +156,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
 
 # 6. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Midwest and Result = Loss
-
 sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -180,7 +174,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
 
 # 7. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Northeast and Result = Loss
-
 sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -198,7 +191,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
 
 # 8. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Northwest and Result = Loss
-
 sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -216,7 +208,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
 
 # 9. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Pacific and Result = Loss
-
 sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -235,7 +226,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
 
 # 10. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Southeast and Result = Loss
-
 sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -253,7 +243,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
 
 # 11. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Southwest and Result = Loss
-
 sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
@@ -270,7 +259,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
 
 
 # 12. Scater chart: 
-
 sales_win_loss %>% 
   group_by(Result, SuppliesSubgroup) %>% 
   summarise(AvgOpp = mean(Opportunity), AvgQual = mean(TotalDaysQualified )) %>%
