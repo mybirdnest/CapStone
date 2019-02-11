@@ -8,7 +8,6 @@ library(broom)
 
 sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
-
 # Review the data in general
 glimpse(sales_win_loss, give.attr = FALSE)
 
@@ -18,6 +17,39 @@ head(sales_win_loss[, 14:19])
 
 # Check for missing values
 map_dbl(sales_win_loss, ~sum(is.na(.)))
+
+# Set Standard chart theme
+
+theme_set(theme_classic() + theme(legend.position = "bottom"))
+
+
+# Data Dictionary
+
+var_descriptions <- c(
+  "A random number assigned to the opportunity",
+  "Supplies Subgroup",
+  "Supplies Group",
+  "Region",
+  "Route to market",
+  "The number of days between the change in sales stages",
+  "A closed opportunity. Values is either won or loss",
+  "A count of number of times an opportunity changes sales stages",
+  "Total days the opportunity has spent in Sales Stages from Identified to Gained Agreement/closing",
+  "Sum of line item revenue estimates",
+  "Client size based on annual revenue",
+  "Client size based on number of employees",
+  "Revenue from client the past two years",
+  "An indicator wheter or not competitor has been identified Values: Known, Unknown, None",
+  "Ratio of Identified/Validating over total days",
+  "Ratio of Qualified/Gaining Agreement over total days",
+  "Ratio of Validated/Qualifying over total days",
+  "Categorical grouping of the opportunity amount"
+)
+
+var <- colnames(sales_win_loss)
+var_type <- unlist(map(sales_win_loss, class))
+var_type <- var_type [-4] 
+as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
 
 # Conclusion: No Missing values are identified from the data
 
@@ -55,7 +87,16 @@ sales_win_loss <- sales_win_loss %>%
     Revenue == 3 ~ "$400K<=Rev<$1.5M",
     Revenue == 4 ~ "Rev>=$1.5M"))
 
-# 1. Cluster bar chart: Revenue vs Result last two years
+
+# 1.
+
+position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K", "$400K<=Rev<$1.5M", "Rev>=$1.5M")
+ggplot(sales_win_loss, aes(x = Revenue2, fill = Result)) + geom_bar() + scale_x_discrete(limits = position)
+
+# Conclusion:
+
+
+# 2. Cluster bar chart: Revenue vs Result last two years
 
 position <- c("Rev>=$1.5M","$400K<=Rev<$1.5M","$50K<=Rev<$400K","$1<=Rev<$50K","Rev=$0")
 ggplot(sales_win_loss) + geom_bar(aes(x = Revenue2, fill = Result), position = "fill") +
@@ -67,7 +108,7 @@ ggplot(sales_win_loss) + geom_bar(aes(x = Revenue2, fill = Result), position = "
 # in the last two years. If client purchase in the last two years, the chance of win decreases as sales deals rises
 
 
-# 2. Bar chart: follow up from no 2, Compare by Region, Route, and Result 
+# 3. Bar chart: follow up from no 2, Compare by Region, Route, and Result 
 
 sales_win_loss %>% 
   group_by(Region, Route) %>% 
@@ -81,7 +122,8 @@ sales_win_loss %>%
 # Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # sales opportunity across all regions
 
-# 3. Bar chart: Opportunity amount compare by Region and Result
+
+# 4. Bar chart: Opportunity amount compare by Region and Result
 
 sales_win_loss %>% 
   group_by(Region, Result) %>% 
@@ -99,7 +141,7 @@ sales_win_loss %>%
 # will explore loss opportunity for each region by route
 
 
-# 4. Bar chart: follow up from no 2, Compare by Route and Result 
+# 5. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Mid-Atlantic and Result = Loss
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
@@ -117,7 +159,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
 # The sales team in this region should focus their sales effort on these three buckets.
 
 
-# 5. Bar chart: follow up from no 2, Compare by Route and Result 
+# 6. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Midwest and Result = Loss
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
@@ -136,7 +178,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
 # The sales team in this region should focus their sales effort on these three buckets.
 
 
-# 6. Bar chart: follow up from no 2, Compare by Route and Result 
+# 7. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Northeast and Result = Loss
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
@@ -154,7 +196,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
 # The sales team in this region should focus their sales effort on these three buckets.
 
 
-# 7. Bar chart: follow up from no 2, Compare by Route and Result 
+# 8. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Northwest and Result = Loss
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
@@ -172,7 +214,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
 # The sales team in this region should focus their sales effort on these three buckets.
 
 
-# 8. Bar chart: follow up from no 2, Compare by Route and Result 
+# 9. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Pacific and Result = Loss
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
@@ -191,7 +233,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
 # "Exterior Accessories" are the three big main areas to focus.  
 
 
-# 9. Bar chart: follow up from no 2, Compare by Route and Result 
+# 10. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Southeast and Result = Loss
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
@@ -208,7 +250,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
 # Accessories", and "Exterior Accessories" are the main areas to focus.  
 # The sales team in this region should focus their sales effort on these three buckets.
 
-# 10. Bar chart: follow up from no 2, Compare by Route and Result 
+
+# 11. Bar chart: follow up from no 2, Compare by Route and Result 
 # where Region = Southwest and Result = Loss
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
@@ -226,31 +269,24 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
 # The sales team in this region should focus their sales effort on these three buckets.
 
 
-
-
-
-
-# 11. Scater chart: 
+# 12. Scater chart: 
 
 sales_win_loss %>% 
   group_by(Result, SuppliesSubgroup) %>% 
-  summarise(Avg = sum(Opportunity)) %>%
-  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
-  ggtitle("Opportunity Loss in Southwest by SuppliesSubgroup and Route") +
-  theme(plot.title = element_text(hjust = 0.5)) 
+  summarise(AvgOpp = mean(Opportunity), AvgQual = mean(TotalDaysQualified )) %>%
+  ggplot(aes(x = AvgQual, y = AvgOpp, shape = factor(Result), label = SuppliesSubgroup)) + 
+  geom_point(aes(colour = factor(Result)), size = 4) +
+  geom_point(colour = "grey90", size = 1.5) + xlab("AvgTotalDaysQualified") + ylab("AvgOpp(US$)") +
+  scale_x_continuous(breaks = seq(0, 30, 5)) + 
+  scale_y_continuous(breaks = seq(40000, 175000, 12500), labels = scales::dollar_format(prefix = "$")) +
+  geom_text(aes(label = SuppliesSubgroup,  color = Result), size = 3) + 
+  stat_ellipse(aes(color = Result), type = "t")
 
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
-# $ Opportunity loss. In the Southwest region, in field sales, "Shelters & RV" and "Batteries & 
-# Accessories", and "Exterior Accessories" are the main areas to focus.  
-# The sales team in this region should focus their sales effort on these three buckets.
-
-
+# Conclusion: The longer the lead stays in the pipeline longer than 12 days, the higher the probability
+# the company will lose the deal.
 
 
 
-#x <- ggpairs(sales_win_loss)
 
 # pick one convention - camel case or snake case
 # try to make them smaller 
@@ -262,19 +298,4 @@ sales_win_loss %>%
 # Use RMarkdown
 # Add some comments on the script or analysis. 
 # Add comment for each chart you show
-
-
-
-
-
-glimpse(sales_win_loss2)
-
-sales_win_loss2 <-
-  sales_win_loss2 %>%
-  mutate(loss = if_else(Opportunity_Result == "Loss",1,0))
-
-sales_loss <- mean(sales_win_loss2$loss)
-sales_loss
-
-
 
