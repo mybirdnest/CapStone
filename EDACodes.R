@@ -60,6 +60,7 @@ var <- colnames(sales_win_loss)
 var_type <- unlist(map(sales_win_loss, class))
 as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
 
+
 # Adding additional columns to translate category column into meaningful column for data visualization
 sales_win_loss <- sales_win_loss %>% 
   mutate(ClientSizeRev2 = case_when(
