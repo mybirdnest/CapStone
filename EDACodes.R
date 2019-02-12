@@ -4,9 +4,9 @@ library(caret)
 library(broom)
 
 # Read the data from ./DATA folder
-# sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
-sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+#sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
 # Review the data in general
 glimpse(sales_win_loss, give.attr = FALSE)
@@ -20,9 +20,17 @@ map_dbl(sales_win_loss, ~sum(is.na(.)))
 
 # Conclusion: No Missing values are identified from the data
 
-
 # Set Standard chart theme
 theme_set(theme_classic() + theme(legend.position = "bottom"))
+
+# Rename the long columns name to make it easier
+colnames(sales_win_loss)<- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
+                             "ElapsedDays", "Result","SalesStageCount",
+                             "TotalDaysClosing","TotalDaysQualified",
+                             "Opportunity","ClientSizeRev","ClientSizeCount",
+                             "Revenue","Competitor","RDaysIdentified",
+                             "RDaysValidated","RDaysQualified",
+                             "DealSize")
 
 
 # Data Dictionary
@@ -35,12 +43,13 @@ var_descriptions <- c(
   "The number of days between the change in sales stages",
   "A closed opportunity. Values is either won or loss",
   "A count of number of times an opportunity changes sales stages",
-  "Total days the opportunity has spent in Sales Stages from Identified to Gained Agreement/closing",
+  "Total days from Identified to Gained Agreement/closing",
+  "Total days from Identified to Qualified Agreement",
   "Sum of line item revenue estimates",
   "Client size based on annual revenue",
   "Client size based on number of employees",
   "Revenue from client the past two years",
-  "An indicator wheter or not competitor has been identified Values: Known, Unknown, None",
+  "An indicator whether or not competitor has been identified",
   "Ratio of Identified/Validating over total days",
   "Ratio of Qualified/Gaining Agreement over total days",
   "Ratio of Validated/Qualifying over total days",
@@ -49,18 +58,7 @@ var_descriptions <- c(
 
 var <- colnames(sales_win_loss)
 var_type <- unlist(map(sales_win_loss, class))
-var_type <- var_type [-4] 
 as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
-
-
-# Rename the long columns name to make it easier
-colnames(sales_win_loss)<- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
-                             "ElapsedDays", "Result","SalesStageCount",
-                             "TotalDaysClosing","TotalDaysQualified",
-                             "Opportunity","ClientSizeRev","ClientSizeCount",
-                             "Revenue","Competitor","RDaysIdentified",
-                             "RDaysValidated","RDaysQualified",
-                             "DealSize")
 
 # Adding additional columns to translate category column into meaningful column for data visualization
 sales_win_loss <- sales_win_loss %>% 
