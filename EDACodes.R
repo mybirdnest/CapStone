@@ -21,7 +21,7 @@ map_dbl(sales_win_loss, ~sum(is.na(.)))
 # Conclusion: No Missing values are identified from the data
 
 # Set Standard chart theme
-theme_set(theme_classic() + theme(legend.position = "bottom"))
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
 
 # Rename the long columns name to make it easier
 colnames(sales_win_loss)<- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
@@ -87,18 +87,30 @@ sales_win_loss <- sales_win_loss %>%
     Revenue == 4 ~ "Rev>=$1.5M"))
 
 
-# 1.
+# 1. Stacked bar chart: Result vs Number of sales leads last two years
 position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K", "$400K<=Rev<$1.5M", "Rev>=$1.5M")
-ggplot(sales_win_loss, aes(x = Revenue2, fill = Result)) + geom_bar() + scale_x_discrete(limits = position)
+ggplot(sales_win_loss, aes(x = Revenue2, fill = Result)) + 
+  geom_bar() + 
+  scale_x_discrete(limits = position) + 
+  xlab("Revenue") + 
+  ylab("Number of records") + 
+  ggtitle("Result vs Number of sales leads for the last two years") + 
+  theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion:
+# Conclusion: A lot sales leads opportunity that resulted in $0 revenue for the last two years that
+# the sales team can learn or put more effort
 
 
 # 2. Cluster bar chart: Revenue vs Result last two years
 position <- c("Rev>=$1.5M","$400K<=Rev<$1.5M","$50K<=Rev<$400K","$1<=Rev<$50K","Rev=$0")
-ggplot(sales_win_loss) + geom_bar(aes(x = Revenue2, fill = Result), position = "fill") +
-  scale_x_discrete(limits = position) + scale_y_continuous(labels = scales::percent_format()) + 
-  coord_flip() + ggtitle("Revenue vs Result last two years") + xlab("Revenue") + ylab("Percent(%)") + 
+ggplot(sales_win_loss) + 
+  geom_bar(aes(x = Revenue2, fill = Result), position = "fill") +
+  scale_x_discrete(limits = position) + 
+  scale_y_continuous(labels = scales::percent_format()) + 
+  coord_flip() + 
+  ggtitle("Revenue vs Result last two years") + 
+  xlab("Revenue") + 
+  ylab("Percent(%)") + 
   theme(plot.title = element_text(hjust = 0.5)) 
 
 # Conclusion: I can see that the probability of loss opportunity is higher if customer didn't buy anything 
@@ -110,8 +122,8 @@ sales_win_loss %>%
   group_by(Region, Route) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Region, y = SumResult, fill = Route)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Market Opportunity by Region and Route last two years") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -124,8 +136,8 @@ sales_win_loss %>%
   group_by(Region, Result) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Region, y = SumResult, fill = Result)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$"))
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$"))
 
 # reorder the chart based on max SumResult, Y axis label make it $100M - $2B??
 # Conclusion: Plenty of loss $ opportunity across all regions especially in Midwest and Pacific region.
@@ -142,8 +154,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                  labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Opportunity Loss in Mid-Atlantic by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -159,8 +171,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Opportunity Loss in Midwest by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -177,8 +189,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Opportunity Loss in Northeast by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -194,8 +206,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Opportunity Loss in Northwest by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -211,8 +223,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Opportunity Loss in Pacific by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -229,8 +241,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Opportunity Loss in Southeast by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -246,8 +258,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
   group_by(Route, SuppliesSubgroup) %>% 
   summarise(SumResult = sum(Opportunity)) %>%
   ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) + 
-  geom_bar(stat = "identity") + scale_y_continuous(breaks = seq(0,1e+11, 1e+08),
-                                                   labels = scales::dollar_format(prefix = "$")) +
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
   ggtitle("Opportunity Loss in Southwest by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
@@ -271,8 +283,6 @@ sales_win_loss %>%
 
 # Conclusion: The longer the lead stays in the pipeline longer than 12 days, the higher the probability
 # the company will lose the deal.
-
-
 
 
 # pick one convention - camel case or snake case
