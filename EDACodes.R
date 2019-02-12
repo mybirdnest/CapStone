@@ -269,7 +269,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
 # The sales team in this region should focus their sales effort on these three buckets.
 
 
-# 12. Scater chart: 
+# 12. Scater chart: Avg Total Days Qualified vs Avg Opp for SuppliesSubgroup
 sales_win_loss %>% 
   group_by(Result, SuppliesSubgroup) %>% 
   summarise(AvgOpp = mean(Opportunity), AvgQual = mean(TotalDaysQualified )) %>%
@@ -279,7 +279,9 @@ sales_win_loss %>%
   scale_x_continuous(breaks = seq(0, 30, 5)) + 
   scale_y_continuous(breaks = seq(40000, 175000, 12500), labels = scales::dollar_format(prefix = "$")) +
   geom_text(aes(label = SuppliesSubgroup,  color = Result), size = 3) + 
-  stat_ellipse(aes(color = Result), type = "t")
+  stat_ellipse(aes(color = Result), type = "t") + 
+  ggtitle("Avg Total Days Qualified vs Avg Opp for SuppliesSubgroup") +
+  theme(plot.title = element_text(hjust = 0.5)) 
 
 # Conclusion: The longer the lead stays in the pipeline longer than 12 days, the higher the probability
 # the company will lose the deal.
