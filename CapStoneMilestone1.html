@@ -129,20 +129,114 @@ $(document).ready(function () {
 </div>
 
 
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>How do you know which deals will close? You’ve worked your territory and leads. Demonstrated the value of your product or service to your customers’ businesses and it should be a done deal. But is it? All too often, determining which customers will buy is a guessing game. You have pipeline reports, regional sales figures and wins and losses that you could analyze. Unlock the information in those sources and you’ll unlock more revenue and more satisfied customers. Better understanding of sales pipeline can help any sales team organization can expect win or lose based on data. In this project, I am going to be the sales manager at an automotive supply company. I can apply similar approach to any B2B company like GE, AMAZON, GOOGLE, ADP, etc. As a manager, I’m trying to assess a sales execution issue. We have not been able to convert enough opportunities lately.</p>
-</div>
-<div id="data" class="section level2">
-<h2>Data</h2>
-<p>Data for this project is publicly available from Wattson Analytic sample data. (<a href="https://community.watsonanalytics.com/wp-content/uploads/2015/04/WA_Fn-UseC_-Sales-Win-Loss.csv" class="uri">https://community.watsonanalytics.com/wp-content/uploads/2015/04/WA_Fn-UseC_-Sales-Win-Loss.csv</a>) The csv file contains 78K row of data and 19 columns. Each row is assigned a unique sales opportunity ID. The dependent variable is ‘Opportunity Result’ column with values of either ‘Won’ or ‘Loss’ There are several independent variables from the sample data that I can use such as: ‘Supplies Group’, ‘Region’, ‘Route To Market’, ‘Elapsed Days In Sales Stage’, ‘Opportunity Result’, ‘Sales Stage Change Count’, ‘Total Days Identified Through Closing’, ‘Total Days Identified Through Qualified’, ‘Opportunity Amount USD’, ‘Client Size By Revenue’, ‘Client Size By Employee Count’, ‘Revenue From Client Past Two Years’, and ‘Competitor Type.’</p>
-</div>
+<p>How do you know which deals will close? You’ve worked your territory and leads. Demonstrated the value of your product or service to your customers’ businesses and it should be a done deal. But is it? All too often, determining which customers will buy is a guessing game. You have pipeline reports, regional sales figures and wins and losses that you could analyze. Unlock the information in those sources and you’ll unlock more revenue and more satisfied customers. Better understanding of sales pipeline can help any sales team organization can expect win or lose based on data. In this project, I am going to be the sales manager at an automotive supply company. Any B2B company like GE, AMAZON, GOOGLE, ADP, etc can use the same approach that I demonstrated on this project to their sales team. As a manager, I’m trying to assess a sales execution issue. We have not been able to convert enough opportunities lately. As a start, I load the required packages and data for this project.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ------------------------------------------------------------------------ tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.7
+## v tidyr   0.8.2     v stringr 1.3.1
+## v readr   1.1.1     v forcats 0.3.0</code></pre>
+<pre><code>## -- Conflicts --------------------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(caret)</code></pre>
+<pre><code>## Warning: package 'caret' was built under R version 3.5.2</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## 
+## Attaching package: 'caret'</code></pre>
+<pre><code>## The following object is masked from 'package:purrr':
+## 
+##     lift</code></pre>
+<pre class="r"><code>library(broom)</code></pre>
+<pre><code>## Warning: package 'broom' was built under R version 3.5.2</code></pre>
+<pre class="r"><code>sales_win_loss &lt;- read_csv(&quot;DATA/WA_Fn-UseC_-Sales-Win-Loss.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   `Opportunity Number` = col_integer(),
+##   `Supplies Subgroup` = col_character(),
+##   `Supplies Group` = col_character(),
+##   Region = col_character(),
+##   `Route To Market` = col_character(),
+##   `Elapsed Days In Sales Stage` = col_integer(),
+##   `Opportunity Result` = col_character(),
+##   `Sales Stage Change Count` = col_integer(),
+##   `Total Days Identified Through Closing` = col_integer(),
+##   `Total Days Identified Through Qualified` = col_integer(),
+##   `Opportunity Amount USD` = col_integer(),
+##   `Client Size By Revenue` = col_integer(),
+##   `Client Size By Employee Count` = col_integer(),
+##   `Revenue From Client Past Two Years` = col_integer(),
+##   `Competitor Type` = col_character(),
+##   `Ratio Days Identified To Total Days` = col_double(),
+##   `Ratio Days Validated To Total Days` = col_double(),
+##   `Ratio Days Qualified To Total Days` = col_double(),
+##   `Deal Size Category` = col_integer()
+## )</code></pre>
+<p>Data for this project is publicly available from Wattson Analytic sample data. (<a href="https://community.watsonanalytics.com/wp-content/uploads/2015/04/WA_Fn-UseC_-Sales-Win-Loss.csv" class="uri">https://community.watsonanalytics.com/wp-content/uploads/2015/04/WA_Fn-UseC_-Sales-Win-Loss.csv</a>) The csv file contains 78K row of data and 19 columns. Each row is assigned a unique sales opportunity ID. The dependent variable is ‘Opportunity Result’ column with values of either ‘Won’ or ‘Loss’ There are several independent variables from the sample data that I can use such as: ‘Supplies Group’, ‘Region’, ‘Route To Market’, ‘Elapsed Days In Sales Stage’, ‘Opportunity Result’, ‘Sales Stage Change Count’, ‘Total Days Identified Through Closing’, ‘Total Days Identified Through Qualified’, ‘Opportunity Amount USD’, ‘Client Size By Revenue’, ‘Client Size By Employee Count’, ‘Revenue From Client Past Two Years’, and ‘Competitor Type.’ I use ‘glimpse’ and ‘head’ to understand the data structure of my sample data.</p>
+<pre class="r"><code>glimpse(sales_win_loss, give.attr = FALSE)</code></pre>
+<pre><code>## Observations: 78,025
+## Variables: 19
+## $ `Opportunity Number`                      &lt;int&gt; 1641984, 1658010, 16...
+## $ `Supplies Subgroup`                       &lt;chr&gt; &quot;Exterior Accessorie...
+## $ `Supplies Group`                          &lt;chr&gt; &quot;Car Accessories&quot;, &quot;...
+## $ Region                                    &lt;chr&gt; &quot;Northwest&quot;, &quot;Pacifi...
+## $ `Route To Market`                         &lt;chr&gt; &quot;Fields Sales&quot;, &quot;Res...
+## $ `Elapsed Days In Sales Stage`             &lt;int&gt; 76, 63, 24, 16, 69, ...
+## $ `Opportunity Result`                      &lt;chr&gt; &quot;Won&quot;, &quot;Loss&quot;, &quot;Won&quot;...
+## $ `Sales Stage Change Count`                &lt;int&gt; 13, 2, 7, 5, 11, 3, ...
+## $ `Total Days Identified Through Closing`   &lt;int&gt; 104, 163, 82, 124, 9...
+## $ `Total Days Identified Through Qualified` &lt;int&gt; 101, 163, 82, 124, 1...
+## $ `Opportunity Amount USD`                  &lt;int&gt; 0, 0, 7750, 0, 69756...
+## $ `Client Size By Revenue`                  &lt;int&gt; 5, 3, 1, 1, 1, 5, 4,...
+## $ `Client Size By Employee Count`           &lt;int&gt; 5, 5, 1, 1, 1, 1, 5,...
+## $ `Revenue From Client Past Two Years`      &lt;int&gt; 0, 0, 0, 0, 0, 0, 0,...
+## $ `Competitor Type`                         &lt;chr&gt; &quot;Unknown&quot;, &quot;Unknown&quot;...
+## $ `Ratio Days Identified To Total Days`     &lt;dbl&gt; 0.696360, 0.000000, ...
+## $ `Ratio Days Validated To Total Days`      &lt;dbl&gt; 0.113985, 1.000000, ...
+## $ `Ratio Days Qualified To Total Days`      &lt;dbl&gt; 0.154215, 0.000000, ...
+## $ `Deal Size Category`                      &lt;int&gt; 1, 1, 1, 1, 4, 5, 2,...</code></pre>
+<pre class="r"><code>head(sales_win_loss[, 1:6])</code></pre>
+<pre><code>## # A tibble: 6 x 6
+##   `Opportunity Nu~ `Supplies Subgr~ `Supplies Group` Region
+##              &lt;int&gt; &lt;chr&gt;            &lt;chr&gt;            &lt;chr&gt; 
+## 1          1641984 Exterior Access~ Car Accessories  North~
+## 2          1658010 Exterior Access~ Car Accessories  Pacif~
+## 3          1674737 Motorcycle Parts Performance &amp; N~ Pacif~
+## 4          1675224 Shelters &amp; RV    Performance &amp; N~ Midwe~
+## 5          1689785 Exterior Access~ Car Accessories  Pacif~
+## 6          1692390 Shelters &amp; RV    Performance &amp; N~ Pacif~
+## # ... with 2 more variables: `Route To Market` &lt;chr&gt;, `Elapsed Days In
+## #   Sales Stage` &lt;int&gt;</code></pre>
+<pre class="r"><code>head(sales_win_loss[, 7:13])</code></pre>
+<pre><code>## # A tibble: 6 x 7
+##   `Opportunity Re~ `Sales Stage Ch~ `Total Days Ide~ `Total Days Ide~
+##   &lt;chr&gt;                       &lt;int&gt;            &lt;int&gt;            &lt;int&gt;
+## 1 Won                            13              104              101
+## 2 Loss                            2              163              163
+## 3 Won                             7               82               82
+## 4 Loss                            5              124              124
+## 5 Loss                           11               91               13
+## 6 Loss                            3              114                0
+## # ... with 3 more variables: `Opportunity Amount USD` &lt;int&gt;, `Client Size
+## #   By Revenue` &lt;int&gt;, `Client Size By Employee Count` &lt;int&gt;</code></pre>
+<pre class="r"><code>head(sales_win_loss[, 14:19])</code></pre>
+<pre><code>## # A tibble: 6 x 6
+##   `Revenue From C~ `Competitor Typ~ `Ratio Days Ide~ `Ratio Days Val~
+##              &lt;int&gt; &lt;chr&gt;                       &lt;dbl&gt;            &lt;dbl&gt;
+## 1                0 Unknown                     0.696         0.114   
+## 2                0 Unknown                     0             1       
+## 3                0 Unknown                     1             0       
+## 4                0 Known                       1             0       
+## 5                0 Unknown                     0             0.141   
+## 6                0 Unknown                     0             0.000877
+## # ... with 2 more variables: `Ratio Days Qualified To Total Days` &lt;dbl&gt;,
+## #   `Deal Size Category` &lt;int&gt;</code></pre>
 <div id="approach" class="section level2">
 <h2>Approach</h2>
-<p>Apart from doing some data ad-hoc exploration, I’ll use the predictive Analytics to understand the most important elements that go into a successful deal. In the data exploration stage, I will use bar chart, scater chart, stack bar chart, and column stack bar chart. To understand the important independent variables affecting sucessfule deal, I will use linear regression, logistic regression, k-cluster regression, and random forest regression methods.</p>
+<p>The data is quite clean in terms of missing values, N/A, or formatting issues. Apart from doing some data ad-hoc exploration, I’ll use the predictive Analytics to understand the most important elements that go into a successful deal. In the data exploration stage, I will use bar chart, scater chart, stack bar chart, and column stack bar chart. To understand the important independent variables affecting sucessfule deal, I will use linear regression, logistic regression, k-cluster regression, and random forest regression methods.</p>
 <div id="wrangling" class="section level5">
 <h5>Wrangling</h5>
-<p>A minimum amount of wrangling was necessary in order to prepare the data set. The sample data mentioned above were imported and minor changes were made to the column headers.</p>
+<p>A minimum amount of wrangling was necessary in order to prepare the data set. The sample data mentioned above were imported and changes were made to the column headers to simplify the column name. I</p>
 </div>
 </div>
 
