@@ -3,8 +3,10 @@ library(tidyverse)
 library(caret)
 library(broom)
 
+
 # Read the data from ./DATA folder
 sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+
 
 #sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
@@ -15,22 +17,32 @@ head(sales_win_loss[, 1:6])
 head(sales_win_loss[, 7:13])
 head(sales_win_loss[, 14:19])
 
-# Check for missing values
-map_dbl(sales_win_loss, ~sum(is.na(.)))
-
-# Conclusion: No Missing values are identified from the data
+# Note: 78,025 data and 19 columns
 
 # Set Standard chart theme
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 
+rename(sales_win_loss, c("Operation Result" = "Result"))
+
+
 # Rename the long columns name to make it easier
-colnames(sales_win_loss)<- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
+colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
                              "ElapsedDays", "Result","SalesStageCount",
                              "TotalDaysClosing","TotalDaysQualified",
                              "Opportunity","ClientSizeRev","ClientSizeCount",
                              "Revenue","Competitor","RDaysIdentified",
                              "RDaysValidated","RDaysQualified",
                              "DealSize")
+
+rename(sales_win_loss, c("Operation Result" = "Result"))
+
+# Check for missing values
+map_dbl(sales_win_loss, ~sum(is.na(.)))
+
+# Note: No Missing values are identified from the data
+
+# Clean up data
+sales_win_loss %>% (filter(Result == "Won" & Revenue == 0))
 
 
 # Data Dictionary
@@ -58,46 +70,67 @@ var_descriptions <- c(
 
 var <- colnames(sales_win_loss)
 var_type <- unlist(map(sales_win_loss, class))
+as_tibble(cbind(c(var, var_type, var_descriptions)))
 as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
+as_tibble(sales_win_loss)
 
 
 # Adding additional columns to translate category column into meaningful column for data visualization
-sales_win_loss <- sales_win_loss %>% 
-  mutate(ClientSizeRev2 = case_when(
-    ClientSizeRev == 1 ~ "ClientRev<$1M",
-    ClientSizeRev == 2 ~ "$1M<=ClientRev<$10M",
-    ClientSizeRev == 3 ~ "$10M<=ClientRev<$50M",
-    ClientSizeRev == 4 ~ "$50M<=ClientRev<$100M",
-    ClientSizeRev == 5 ~ "ClientRev>=$100M"))
-
-sales_win_loss <- sales_win_loss %>% 
-  mutate(ClientSizeCount2 = case_when(
-    ClientSizeCount == 1 ~ "Count<1K",
-    ClientSizeCount == 2 ~ "1K<=Count<5K",
-    ClientSizeCount == 3 ~ "5K<=Count<10K",
-    ClientSizeCount == 4 ~ "10K<=Count<30K",
-    ClientSizeCount == 5 ~ "Count>=30K"))
-
-sales_win_loss <- sales_win_loss %>% 
-  mutate(Revenue2 = case_when(
-    Revenue == 0 ~ "Rev=$0",
-    Revenue == 1 ~ "$1<=Rev<$50K",
-    Revenue == 2 ~ "$50K<=Rev<$400K",
-    Revenue == 3 ~ "$400K<=Rev<$1.5M",
-    Revenue == 4 ~ "Rev>=$1.5M"))
+# df2 = data.frame(ClientSizeRev = c(1, 2, 3, 4, 5), ClientSizeRev2 = c("ClientRev<$1M", "$1M<=ClientRev<$10M",
+#                                                                       "$10M<=ClientRev<$50M", "$50M<=ClientRev<$100M",
+#                                                                   "ClientRev>=$100M"))
+# 
+# df3 = data.frame(ClientSizeCount = c(1, 2, 3, 4, 5), ClientSizeCount2 = c("Count<1K", "1K<=Count<5K",
+#                                                                           "5K<=Count<10K","10K<=Count<30K",
+#                                                                           "Count>=30K"))
+# 
+# df4 = data.frame(Revenue = c(1, 2, 3, 4, 5), Revenue2 = c("Rev=$0", "$1<=Rev<$50K","$50K<=Rev<$400K","$400K<=Rev<$1.5M",
+#                                                           "Rev>=$1.5M"))
+# 
+# 
+# left_join(sales_win_loss, df2, by = "ClientSizeRev")
+# left_join(sales_win_loss, df3, by = "ClientSizeCount")
+# left_join(sales_win_loss, df4, by = "Revenue")
 
 
-# 1. Stacked bar chart: Result vs Number of sales leads last two years
+
+  sales_win_loss <- sales_win_loss %>%
+    mutate(ClientSizeRev2 = case_when(
+      ClientSizeRev == 1 ~ "ClientRev<$1M",
+      ClientSizeRev == 2 ~ "$1M<=ClientRev<$10M",
+      ClientSizeRev == 3 ~ "$10M<=ClientRev<$50M",
+      ClientSizeRev == 4 ~ "$50M<=ClientRev<$100M",
+      ClientSizeRev == 5 ~ "ClientRev>=$100M"))
+ 
+  sales_win_loss <- sales_win_loss %>%
+    mutate(ClientSizeCount2 = case_when(
+      ClientSizeCount == 1 ~ "Count<1K",
+      ClientSizeCount == 2 ~ "1K<=Count<5K",
+      ClientSizeCount == 3 ~ "5K<=Count<10K",
+      ClientSizeCount == 4 ~ "10K<=Count<30K",
+      ClientSizeCount == 5 ~ "Count>=30K"))
+ 
+  sales_win_loss <- sales_win_loss %>%
+    mutate(Revenue2 = case_when(
+      Revenue == 0 ~ "Rev=$0",
+      Revenue == 1 ~ "$1<=Rev<$50K",
+      Revenue == 2 ~ "$50K<=Rev<$400K",
+      Revenue == 3 ~ "$400K<=Rev<$1.5M",
+      Revenue == 4 ~ "Rev>=$1.5M"))
+
+    glimpse(sales_win_loss)
+
+# 1. Stacked bar chart: Revenue vs Number of sales leads last two years
 position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K", "$400K<=Rev<$1.5M", "Rev>=$1.5M")
 ggplot(sales_win_loss, aes(x = Revenue2, fill = Result)) + 
   geom_bar() + 
   scale_x_discrete(limits = position) + 
   xlab("Revenue") + 
   ylab("Number of records") + 
-  ggtitle("Result vs Number of sales leads for the last two years") + 
+  ggtitle("Revenue vs Number of sales leads for the last two years") + 
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: A lot sales leads opportunity that resulted in $0 revenue for the last two years that
+# Note: A lot sales leads opportunity that resulted in $0 revenue for the last two years that
 # the sales team can learn or put more effort
 
 
@@ -113,7 +146,7 @@ ggplot(sales_win_loss) +
   ylab("Percent(%)") + 
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: I can see that the probability of loss opportunity is higher if customer didn't buy anything 
+# Note: I can see that the probability of loss opportunity is higher if customer didn't buy anything 
 # in the last two years. If client purchase in the last two years, the chance of win decreases as sales deals rises
 
 
@@ -127,7 +160,7 @@ sales_win_loss %>%
   ggtitle("Market Opportunity by Region and Route last two years") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# Note: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # sales opportunity across all regions
 
 
@@ -140,7 +173,7 @@ sales_win_loss %>%
   scale_y_continuous(breaks = seq(0,1e+11, 1e+08), labels = scales::dollar_format(prefix = "$"))
 
 # reorder the chart based on max SumResult, Y axis label make it $100M - $2B??
-# Conclusion: Plenty of loss $ opportunity across all regions especially in Midwest and Pacific region.
+# Note: Plenty of loss $ opportunity across all regions especially in Midwest and Pacific region.
 # Loss $ opportunity in Midwest and Pacific is ~1.3B each.  These two regions also contribute the biggest $ win
 # in the range of $300M - $350M.
 # Other region also show loss $ opportunity in the range of $500M - $700M.  
@@ -170,10 +203,19 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
 #   theme(plot.title = element_text(hjust = 0.5)) +
 #   facet_grid(Region)
 
+sales_win_loss %>% 
+  filter(Result == "Loss") %>%
+  group_by(Route, SuppliesSubgroup, Region) %>%
+  summarise(SumResult = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumResult, fill = SuppliesSubgroup)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(0,1e+11, 2e+08), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Mid-Atlantic by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_wrap(~ Region, ncol = 2)
 
 
-
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# Note: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # $ Opportunity loss. In the Mid-Atlantic region, in field sales, "Shelters & RV" and "Batteries & 
 # Accessories", and "Exterior Accessories" are the main areas to focus.  
 # The sales team in this region should focus their sales effort on these three buckets.
@@ -191,7 +233,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
   theme(plot.title = element_text(hjust = 0.5)) 
 
 
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# Note: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # $ Opportunity loss. In the Midwest region, in field sales, "Shelters & RV" and "Batteries & 
 # Accessories", and "Exterior Accessories" are the main areas to focus.  
 # The sales team in this region should focus their sales effort on these three buckets.
@@ -208,7 +250,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
   ggtitle("Opportunity Loss in Northeast by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# Note: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # $ Opportunity loss. In the Northeast region, in field sales, "Shelters & RV" and "Batteries & 
 # Accessories", and "Exterior Accessories" are the main areas to focus.  
 # The sales team in this region should focus their sales effort on these three buckets.
@@ -225,7 +267,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
   ggtitle("Opportunity Loss in Northwest by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# Note: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # $ Opportunity loss. In the Northwest region, in field sales, "Shelters & RV" and "Batteries & 
 # Accessories", and "Exterior Accessories" are the main areas to focus.  
 # The sales team in this region should focus their sales effort on these three buckets.
@@ -242,7 +284,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
   ggtitle("Opportunity Loss in Pacific by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: Quite similar to Pacific, Field sales and reseller are the biggest sales chanel that 
+# Note: Quite similar to Pacific, Field sales and reseller are the biggest sales chanel that 
 # contribute to a lot of $ Opprotunity loss. However, the "Other" bucket is also something to pay attention to
 # We didn't see this in the other regions as an issue. 
 # Looking at the SuppliesSubgroup, in field sales, "Shelters & RV", "Batteries & Accessories", and
@@ -260,7 +302,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
   ggtitle("Opportunity Loss in Southeast by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# Note: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # $ Opportunity loss. In the Southeast region, in field sales, "Shelters & RV" and "Batteries & 
 # Accessories", and "Exterior Accessories" are the main areas to focus.  
 # The sales team in this region should focus their sales effort on these three buckets.
@@ -277,7 +319,7 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
   ggtitle("Opportunity Loss in Southwest by SuppliesSubgroup and Route") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
+# Note: Field sales and reseller are the two biggest sales chanel that contribute to a lot of
 # $ Opportunity loss. In the Southwest region, in field sales, "Shelters & RV" and "Batteries & 
 # Accessories", and "Exterior Accessories" are the main areas to focus.  
 # The sales team in this region should focus their sales effort on these three buckets.
@@ -297,7 +339,8 @@ sales_win_loss %>%
   ggtitle("Avg Total Days Qualified vs Avg Opp for SuppliesSubgroup") +
   theme(plot.title = element_text(hjust = 0.5)) 
 
-# Conclusion: The longer the lead stays in the pipeline longer than 12 days, the higher the probability
+
+# Note: The longer the lead stays in the pipeline longer than 12 days, the higher the probability
 # the company will lose the deal.
 
 
@@ -311,4 +354,62 @@ sales_win_loss %>%
 # Use RMarkdown
 # Add some comments on the script or analysis. 
 # Add comment for each chart you show
+
+
+# Creating Dummy Variables using caret package 
+
+model_Data <- sales_win_loss %>% 
+  select(SuppliesSubgroup, Region, Route, TotalDaysClosing, TotalDaysQualified, Opportunity, ClientSizeRev, ClientSizeCount,
+         Revenue, Competitor)
+
+factor_columns <- c("SuppliesSubgroup", "Region", "Route", "TotalDaysClosing","TotalDaysQualified",
+                    "Opportunity","Competitor")
+
+
+model_data[factor_columns] <- map(model_data[factor_columns], factor)
+
+dummy_vars <- caret::dummyVars(~ ., data = model_data)
+model_data_dummy <- data.frame(predict(dummy_vars, newdata = model_data))
+
+# Identifying linear dependencies
+
+linear_combos <- caret::findLinearCombos(model_data_dummy)
+
+colnames(model_data_dummy[, linear_combos$remove])
+
+model_data_dummy <- model_data_dummy[, -linear_combos$remove]
+
+# Check for high correlation
+
+cor_matrix <- cor(model_data_dummy)
+
+high_cor <- as.data.frame(which(abs(cor_matrix) > 0.90, arr.ind = TRUE))
+
+cm_index <- high_cor %>% filter(row != col)
+
+cor_matrix[cm_index[, 1], cm_index[, 2]]
+
+cbind(
+  cm_index[, 1],
+  colnames(model_data_dummy[cm_index[, 1]]),
+  cm_index[, 2],
+  colnames(model_data_dummy[cm_index[, 2]]))
+
+
+# Check for variables with a variance near zero and remove them
+
+near_zero_var <- caret::nearZeroVar(model_data_dummy)
+
+colnames(model_data_dummy[, near_zero_var])
+
+model_data_dummy <- model_data_dummy[, -near_zero_var]
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+
+
+
 
