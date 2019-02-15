@@ -28,6 +28,8 @@ The csv file contains 78K row of data and 19 columns.  Each row is assigned a un
 
 glimpse(sales_win_loss, give.attr = FALSE)
 
+summary(sales_win_loss)
+
 head(sales_win_loss[, 1:6])
 
 head(sales_win_loss[, 7:13])
