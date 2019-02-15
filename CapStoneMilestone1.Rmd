@@ -22,3 +22,5 @@ Apart from doing some data ad-hoc exploration, I’ll use the predictive Analyti
 
 ##### Wrangling
 A minimum amount of wrangling was necessary in order to prepare the data set.  The sample data mentioned above were imported and minor changes were made to the column headers.  
+
+

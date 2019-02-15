@@ -2,7 +2,9 @@
 title: "Predicting Sales Win or Lose"
 author: "Herman Toeante"
 date: "February 12, 2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 
@@ -34,10 +36,312 @@ head(sales_win_loss[, 14:19])
 
 ```
 
+I checked for missing values of my dataset
 
-## Approach
+```{r}
 
-The data is quite clean in terms of missing values, N/A, or formatting issues. Apart from doing some data ad-hoc exploration, I’ll use the predictive Analytics to understand the most important elements that go into a successful deal.  In the data exploration stage, I will use bar chart, scater chart, stack bar chart, and column stack bar chart.  To understand the important independent variables affecting sucessfule deal, I will use linear regression, logistic regression, k-cluster regression, and random forest regression methods.
+map_dbl(sales_win_loss, ~sum(is.na(.)))
 
-##### Wrangling
-A minimum amount of wrangling was necessary in order to prepare the data set.  The sample data mentioned above were imported and changes were made to the column headers to simplify the column name. I   
+```
+
+The next step is setting the standard theme for the charts to theme_minimal with legend set at the bottom of the chart.
+
+```{r message = FALSE}
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+```
+
+For better data visualization on the chart, I rename the columns with long name.  
+
+```{r message = FALSE}
+
+colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
+                             "ElapsedDays", "Result","SalesStageCount",
+                             "TotalDaysClosing","TotalDaysQualified",
+                             "Opportunity","ClientSizeRev","ClientSizeCount",
+                             "Revenue","Competitor","RDaysIdentified",
+                             "RDaysValidated","RDaysQualified",
+                             "DealSize")
+
+```
+
+Moreover, I made several assumptions to translate the categorical columns into meaningful information. 
+
+
+
+<!-- df2 = data.frame(ClientSizeRev = c(1, 2, 3, 4, 5), ClientSizeRev2 = c("ClientRev<$1M", "$1M<=ClientRev<$10M", -->
+<!--                                                                       "$10M<=ClientRev<$50M", "$50M<=ClientRev<$100M", -->
+<!--                                                                   "ClientRev>=$100M")) -->
+
+<!-- df3 = data.frame(ClientSizeCount = c(1, 2, 3, 4, 5), ClientSizeCount2 = c("Count<1K", "1K<=Count<5K", -->
+<!--                                                                           "5K<=Count<10K","10K<=Count<30K", -->
+<!--                                                                           "Count>=30K")) -->
+
+<!-- df4 = data.frame(Revenue = c(1, 2, 3, 4, 5), Revenue2 = c("Rev=$0", "$1<=Rev<$50K","$50K<=Rev<$400K","$400K<=Rev<$1.5M", -->
+<!--                                                           "Rev>=$1.5M")) -->
+
+
+<!-- join(sales_win_loss, df2, by = "ClientSizeRev") -->
+<!-- join(sales_win_loss, df3, by = "ClientSizesCount") -->
+<!-- join(sales_win_loss, df4, by = "Revenue") -->
+
+
+```{r message = FALSE}
+
+  sales_win_loss <- sales_win_loss %>%
+    mutate(ClientSizeRev2 = case_when(
+      ClientSizeRev == 1 ~ "ClientRev<$1M",
+      ClientSizeRev == 2 ~ "$1M<=ClientRev<$10M",
+      ClientSizeRev == 3 ~ "$10M<=ClientRev<$50M",
+      ClientSizeRev == 4 ~ "$50M<=ClientRev<$100M",
+      ClientSizeRev == 5 ~ "ClientRev>=$100M"))
+ 
+  sales_win_loss <- sales_win_loss %>%
+    mutate(ClientSizeCount2 = case_when(
+      ClientSizeCount == 1 ~ "Count<1K",
+      ClientSizeCount == 2 ~ "1K<=Count<5K",
+      ClientSizeCount == 3 ~ "5K<=Count<10K",
+      ClientSizeCount == 4 ~ "10K<=Count<30K",
+      ClientSizeCount == 5 ~ "Count>=30K"))
+ 
+  sales_win_loss <- sales_win_loss %>%
+    mutate(Revenue2 = case_when(
+      Revenue == 0 ~ "Rev=$0",
+      Revenue == 1 ~ "$1<=Rev<$50K",
+      Revenue == 2 ~ "$50K<=Rev<$400K",
+      Revenue == 3 ~ "$400K<=Rev<$1.5M",
+      Revenue == 4 ~ "Rev>=$1.5M"))
+
+```
+
+There are several values in the dataset where the sales opportunity resulting in 'Won' but the revenue is '$0'  I am going to exclude these data from the dataset
+
+sales_win_loss %>% sales_win_loss %>% (filter(Result == "Won" & Revenue == 0)) -- Error WHY?
+
+
+## Data Dictionary
+
+
+```{r}
+
+var_descriptions <- c(
+  "A random number assigned to the opportunity",
+  "Supplies Subgroup",
+  "Supplies Group",
+  "Region",
+  "Route to market",
+  "The number of days between the change in sales stages",
+  "A closed opportunity. Values is either won or loss",
+  "A count of number of times an opportunity changes sales stages",
+  "Total days from Identified to Gained Agreement/closing",
+  "Total days from Identified to Qualified Agreement",
+  "Sum of line item revenue estimates",
+  "Client size based on annual revenue",
+  "Client size based on number of employees",
+  "Revenue from client the past two years",
+  "An indicator whether or not competitor has been identified",
+  "Ratio of Identified/Validating over total days",
+  "Ratio of Qualified/Gaining Agreement over total days",
+  "Ratio of Validated/Qualifying over total days",
+  "Categorical grouping of the opportunity amount"
+)
+
+var <- colnames(sales_win_loss)
+var_type <- unlist(map(sales_win_loss, class))
+as_tibble(cbind(c(var, var_type, var_descriptions)))
+as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
+as_tibble(sales_win_loss)
+
+```
+
+## Data Exploration
+
+The first chart is to understand the number of sales leads that the company won versus loss in respect to revenue for the last two years.
+
+```{r}
+
+ggplot(sales_win_loss, aes(x = Result, color = Result, fill = Result)) +
+  geom_bar() 
+
+```
+
+From the chart, we have ~18K records of 'Won' sales leads and ~60K 'Loss" sales leads for the last two years. Using this data, it looks the high number of loss opprotunity could be attributed to business condition or we can explore deeper into the data set if there are variables that affecting the loss opportunity.
+
+
+```{r}
+
+position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K", "$400K<=Rev<$1.5M", "Rev>=$1.5M")
+ ggplot(sales_win_loss, aes(x = Revenue2, fill = Result)) + 
+  geom_bar() + 
+  scale_x_discrete(limits = position) + 
+  xlab("Revenue") + 
+  ylab("Number of records") + 
+  ggtitle("Revenue vs Number of sales leads for the last two years") + 
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+From the chart, we can see for the last two years, there are plenty of sales leads opportunity A lot sales leads opportunity that resulted in $0 revenue for the last two years that the sales team can learn or put more effort
+
+
+```{r}
+
+position <- c("Rev>=$1.5M","$400K<=Rev<$1.5M","$50K<=Rev<$400K","$1<=Rev<$50K","Rev=$0")
+ggplot(sales_win_loss) + 
+  geom_bar(aes(x = Revenue2, fill = Result), position = "fill") +
+  scale_x_discrete(limits = position) + 
+  scale_y_continuous(labels = scales::percent_format()) + 
+  coord_flip() + 
+  ggtitle("Revenue vs Result last two years") + 
+  xlab("Revenue") + 
+  ylab("Percent(%)") + 
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+I can see that the probability of loss opportunity is higher if customer didn't buy anything in the last two years. If client purchase in the last two years, the chance of win decreases as sales deals rises
+
+
+``` {r}
+
+sales_win_loss %>% 
+  group_by(Region, Route) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Region, y = SumOpportunity, fill = Route)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0,1e+11, 2e+08), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Market Opportunity by Region and Route last two years") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+From the chart above, it's clear that the field sales and reseller are the most common channel of sales route to market across all regions.  In the pacific region, other sales channel also play some role to bring in revenue in comparison to other regions. I want to see the breakdown of the 'Loss' opportunity by each region to dig deeper. The subsequent charts will show the break down of the supplies subgroup for each region where sales lead is 'Loss' 
+
+
+```{r}
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumOpportunity, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0, 4e+08, 5e+07), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Mid-Atlantic by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+The chart above show the Mid-Atlantic region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity.  
+
+
+```{r}
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Midwest") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumOpportunity, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0, 1.5e+09, 2e+08), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Midwest by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+The chart above show the MidWest region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity.  
+
+```{r}
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumOpportunity, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0, 5e+08, 5e+07), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Northeast by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
+The chart above show the Northeast region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV" and "Motorcycle Parts"" are the main supplies subgroup that contribute to the loss opportunity. 
+
+```{r}
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumOpportunity, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0, 1e+11, 5e+07), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Northwest by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
+The chart above show the Northwest region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
+
+```{r}
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumOpportunity, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0, 1e+11, 1.5e+08), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Pacific by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
+The chart above show the Pacific region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
+```{r}
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumOpportunity, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0, 1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Southeast by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
+The chart above show the MidWest region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
+```{r}
+
+sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
+  group_by(Route, SuppliesSubgroup) %>% 
+  summarise(SumOpportunity = sum(Opportunity)) %>%
+  ggplot(aes(x = Route, y = SumOpportunity, fill = SuppliesSubgroup)) + 
+  geom_bar(stat = "identity") + 
+  scale_y_continuous(breaks = seq(0, 1e+11, 1e+08), labels = scales::dollar_format(prefix = "$")) +
+  ggtitle("Opportunity Loss in Southwest by SuppliesSubgroup and Route") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
+The chart above show the SouthWest region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
+````{r}
+
+sales_win_loss %>% 
+  group_by(Result, SuppliesSubgroup) %>% 
+  summarise(AvgOpp = mean(Opportunity), AvgQual = mean(TotalDaysQualified )) %>%
+  ggplot(aes(x = AvgQual, y = AvgOpp, shape = factor(Result), label = SuppliesSubgroup)) + 
+  geom_point(aes(colour = factor(Result)), size = 4) +
+  geom_point(colour = "grey90", size = 1.5) + xlab("AvgTotalDaysQualified") + ylab("AvgOpp(US$)") +
+  scale_x_continuous(breaks = seq(0, 30, 5)) + 
+  scale_y_continuous(breaks = seq(40000, 175000, 12500), labels = scales::dollar_format(prefix = "$")) +
+  geom_text(aes(label = SuppliesSubgroup,  color = Result), size = 3) + 
+  stat_ellipse(aes(color = Result), type = "t") + 
+  ggtitle("Avg Total Days Qualified vs Avg Opp for SuppliesSubgroup") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
