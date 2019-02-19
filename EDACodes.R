@@ -356,23 +356,113 @@ sales_win_loss %>%
 # Add comment for each chart you show
 
 
-# Creating Dummy Variables using caret package 
 
-model_Data <- sales_win_loss %>% 
+# Create modeling data
+# Select the data to be used in modeling and assign to ModelData, then convert 
+# the categorical information to dummy variables to help with the modelling. 
+
+
+ModelData <- sales_win_loss %>% 
   select(SuppliesSubgroup, Region, Route, TotalDaysClosing, TotalDaysQualified, Opportunity, ClientSizeRev, ClientSizeCount,
-         Revenue, Competitor)
+         Revenue, Competitor, Result)
 
 factor_columns <- c("SuppliesSubgroup", "Region", "Route", "TotalDaysClosing","TotalDaysQualified",
                     "Opportunity","Competitor")
 
 
-model_data[factor_columns] <- map(model_data[factor_columns], factor)
+ModelData[factor_columns] <- map(ModelData[factor_columns], factor)
 
-dummy_vars <- caret::dummyVars(~ ., data = model_data)
-model_data_dummy <- data.frame(predict(dummy_vars, newdata = model_data))
+library(caret)
+set.seed(3456)
+trainIndex <- caret::createDataPartition(ModelData$Result, p = .2, 
+                                         list = FALSE, 
+                                         times = 1)
+head(trainIndex)
+
+training <- ModelData[ trainIndex,]
+testing  <- ModelData[-trainIndex,]
+
+
+# Creating dummy variables is converting a categorical variable to as many binary variables as here are categories.
+dummy_model <- caret::dummyVars(Result ~., data = training)
+
+# Create the dummy variables using predict. The Y variable (Result) will not be present in trainData_mat.
+trainData_mat <- predict(dummy_model, newdata = training)
+
+# # Convert to dataframe
+trainData <- data.frame(trainData_mat)
+
+# # See the structure of the new dataset
+str(training)
+
+# As can be seen from the new training dataset, the categorical variables are now translated to numbers
+
+
+# Set up model parameters
+
+control <- caret::trainControl(method = "cv", number = 2, classProbs = TRUE)
+seed <- 7
+metric <- "Accuracy"
+set.seed(seed)
+mtry <- 3
+tunegrid <- expand.grid(.mtry = mtry)                                    
+                                    
+
+# Logistic Model
+
+glm_model <- caret::train(
+  Result ~ .,
+  data = training,
+  method = "glm",
+  trControl = control
+)
+
+summary(glm_model)
+
+# Random forest
+
+set.seed(3456)
+rf_model <- caret::train(
+  Result ~ .,
+  data = training,
+  method = "rf",
+  metric = metric, 
+  tunegrid = tunegrid,
+  trControl = control
+)
+
+summary(rf_model)
+
+# Model Selection
+
+# To select the best model, make predictions for each model on the validation set using the `predict` 
+# function in caret. Create confusion matrix and calculate the F1 score. 
+# Use F1 score to select the best model. 
+
+pred_glm <- predict(glm_model, testing)
+
+conf_mat_glm <- caret::confusionMatrix(pred_glm, mode = 'everything', positive = 'Won')
+ 
+  
+conf_mat_glm
+conf_mat_glm$byClass["F1"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Identifying linear dependencies
-
 linear_combos <- caret::findLinearCombos(model_data_dummy)
 
 colnames(model_data_dummy[, linear_combos$remove])
@@ -380,7 +470,6 @@ colnames(model_data_dummy[, linear_combos$remove])
 model_data_dummy <- model_data_dummy[, -linear_combos$remove]
 
 # Check for high correlation
-
 cor_matrix <- cor(model_data_dummy)
 
 high_cor <- as.data.frame(which(abs(cor_matrix) > 0.90, arr.ind = TRUE))
@@ -396,20 +485,13 @@ cbind(
   colnames(model_data_dummy[cm_index[, 2]]))
 
 
+
 # Check for variables with a variance near zero and remove them
+near_zero_var <- caret::nearZeroVar(model_data)
 
-near_zero_var <- caret::nearZeroVar(model_data_dummy)
+colnames(model_data[, near_zero_var])
 
-colnames(model_data_dummy[, near_zero_var])
+model_data <- model_data[, -near_zero_var]
 
-model_data_dummy <- model_data_dummy[, -near_zero_var]
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
-
-
-
+head(model_data)
 
