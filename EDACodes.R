@@ -22,8 +22,6 @@ head(sales_win_loss[, 14:19])
 # Set Standard chart theme
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 
-rename(sales_win_loss, c("Operation Result" = "Result"))
-
 
 # Rename the long columns name to make it easier
 colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
@@ -33,8 +31,6 @@ colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", 
                              "Revenue","Competitor","RDaysIdentified",
                              "RDaysValidated","RDaysQualified",
                              "DealSize")
-
-rename(sales_win_loss, c("Operation Result" = "Result"))
 
 # Check for missing values
 map_dbl(sales_win_loss, ~sum(is.na(.)))
@@ -117,8 +113,13 @@ as_tibble(sales_win_loss)
       Revenue == 2 ~ "$50K<=Rev<$400K",
       Revenue == 3 ~ "$400K<=Rev<$1.5M",
       Revenue == 4 ~ "Rev>=$1.5M"))
-
-    glimpse(sales_win_loss)
+  
+  sales_win_loss <- sales_win_loss %>%
+    mutate(Result2 = case_when(
+      Result == "Won" ~ 1,
+      Result == "Loss" ~ 0))
+  
+  glimpse(sales_win_loss)
 
 # 1. Stacked bar chart: Revenue vs Number of sales leads last two years
 position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K", "$400K<=Rev<$1.5M", "Rev>=$1.5M")
@@ -356,25 +357,13 @@ sales_win_loss %>%
 # Add comment for each chart you show
 
 
-
 # Create modeling data
 # Select the data to be used in modeling and assign to ModelData, then convert 
 # the categorical information to dummy variables to help with the modelling. 
 
 
-ModelData <- sales_win_loss %>% 
-  select(SuppliesSubgroup, Region, Route, TotalDaysClosing, TotalDaysQualified, Opportunity, ClientSizeRev, ClientSizeCount,
-         Revenue, Competitor, Result)
-
-factor_columns <- c("SuppliesSubgroup", "Region", "Route", "TotalDaysClosing","TotalDaysQualified",
-                    "Opportunity","Competitor")
-
-
-ModelData[factor_columns] <- map(ModelData[factor_columns], factor)
-
-library(caret)
 set.seed(3456)
-trainIndex <- caret::createDataPartition(ModelData$Result, p = .2, 
+trainIndex <- caret::createDataPartition(ModelData$Result, p = .75, 
                                          list = FALSE, 
                                          times = 1)
 head(trainIndex)
@@ -384,7 +373,7 @@ testing  <- ModelData[-trainIndex,]
 
 
 # Creating dummy variables is converting a categorical variable to as many binary variables as here are categories.
-dummy_model <- caret::dummyVars(Result ~., data = training)
+dummy_model <- caret::dummyVars(Result ~ Region + Route + SuppliesSubgroup, data = training)
 
 # Create the dummy variables using predict. The Y variable (Result) will not be present in trainData_mat.
 trainData_mat <- predict(dummy_model, newdata = training)
@@ -399,7 +388,6 @@ str(training)
 
 
 # Set up model parameters
-
 control <- caret::trainControl(method = "cv", number = 2, classProbs = TRUE)
 seed <- 7
 metric <- "Accuracy"
@@ -407,6 +395,44 @@ set.seed(seed)
 mtry <- 3
 tunegrid <- expand.grid(.mtry = mtry)                                    
                                     
+
+# Logistic Model
+glm_model <- caret::train(
+  Result ~ Region + Route + SuppliesSubgroup,
+  data = training,
+  method = "glm",
+  trControl = control
+)
+
+summary(glm_model)
+
+pred_glm <- predict(glm_model, type = "prob")
+
+summary(pred_glm)
+
+pred_glm <- predict(glm_model, testing)
+
+conf_mat_glm <- caret::confusionMatrix(pred_glm, mode = 'everything', positive = 'Won')
+
+conf_mat_glm
+conf_mat_glm$byClass["F1"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Logistic Model
 
