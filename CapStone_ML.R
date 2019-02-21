@@ -97,6 +97,8 @@ head(trainIndex)
 training <- sales_win_loss[ trainIndex,]
 testing  <- sales_win_loss[-trainIndex,]
 
+training <- data.frame(training)
+testing <- data.frame(testing)
 
 # Creating dummy variables is converting a categorical variable to as many binary variables as here are categories.
 dummy_model <- caret::dummyVars(Result ~ Region + Route + SuppliesGroup + TotalDaysQualified + Competitor, data = training)
@@ -132,12 +134,14 @@ glm_model <- caret::train(
 
 summary(glm_model)
 
-pred_glm <- predict(glm_model, type = "prob")
+pred_glm <- predict(glm_model, newdata = testing, type = "prob")
 
 summary(pred_glm)
 
+tapply(pred_glm, training$Result, mean)
 
-conf_mat_glm <- caret::confusionMatrix(pred_glm, mode = 'everything', positive = 'Won')
+
+conf_mat_glm <- caret::confusionMatrix(pred_glm, testing$Result, positive = "Won")
 
 conf_mat_glm
 conf_mat_glm$byClass["F1"]
