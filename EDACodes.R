@@ -363,13 +363,13 @@ sales_win_loss %>%
 
 
 set.seed(3456)
-trainIndex <- caret::createDataPartition(ModelData$Result, p = .75, 
+trainIndex <- caret::createDataPartition(sales_win_loss$Result, p = .75, 
                                          list = FALSE, 
                                          times = 1)
 head(trainIndex)
 
-training <- ModelData[ trainIndex,]
-testing  <- ModelData[-trainIndex,]
+training <- sales_win_loss[ trainIndex,]
+testing  <- sales_win_loss[-trainIndex,]
 
 
 # Creating dummy variables is converting a categorical variable to as many binary variables as here are categories.
@@ -411,6 +411,7 @@ pred_glm <- predict(glm_model, type = "prob")
 summary(pred_glm)
 
 pred_glm <- predict(glm_model, testing)
+
 
 conf_mat_glm <- caret::confusionMatrix(pred_glm, mode = 'everything', positive = 'Won')
 
