@@ -4,7 +4,7 @@ library(caret)
 library(broom)
 
 # Read the data from ./DATA folder
-sales_win_loss <- read_csv("/repos/CapStone/DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
+sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
 
 # Rename the long columns name to make it easier
@@ -52,22 +52,6 @@ as_tibble(sales_win_loss)
 
 
 sales_win_loss <- sales_win_loss %>%
-  mutate(ClientSizeRev2 = case_when(
-    ClientSizeRev == 1 ~ "ClientRev<$1M",
-    ClientSizeRev == 2 ~ "$1M<=ClientRev<$10M",
-    ClientSizeRev == 3 ~ "$10M<=ClientRev<$50M",
-    ClientSizeRev == 4 ~ "$50M<=ClientRev<$100M",
-    ClientSizeRev == 5 ~ "ClientRev>=$100M"))
-
-sales_win_loss <- sales_win_loss %>%
-  mutate(ClientSizeCount2 = case_when(
-    ClientSizeCount == 1 ~ "Count<1K",
-    ClientSizeCount == 2 ~ "1K<=Count<5K",
-    ClientSizeCount == 3 ~ "5K<=Count<10K",
-    ClientSizeCount == 4 ~ "10K<=Count<30K",
-    ClientSizeCount == 5 ~ "Count>=30K"))
-
-sales_win_loss <- sales_win_loss %>%
   mutate(Revenue2 = case_when(
     Revenue == 0 ~ "Rev=$0",
     Revenue == 1 ~ "$1<=Rev<$50K",
@@ -82,37 +66,30 @@ sales_win_loss <- sales_win_loss %>%
 
 glimpse(sales_win_loss)
 
+# saveRDS
 
 # Create modeling data
-# Select the data to be used in modeling and assign to ModelData, then convert 
-# the categorical information to dummy variables to help with the modelling. 
-
+# Select the data to be used in modeling. Set Training, Validation, and Testing data
 
 set.seed(3456)
-trainIndex <- caret::createDataPartition(sales_win_loss$Result, p = .75, 
-                                         list = FALSE, 
-                                         times = 1)
-head(trainIndex)
+TrainingValidationIndex <- caret::createDataPartition(sales_win_loss$Result, p = .80, 
+                                                      list = FALSE, 
+                                                      times = 1)
+str(TrainingValidationIndex)
 
-training <- sales_win_loss[ trainIndex,]
-testing  <- sales_win_loss[-trainIndex,]
 
-training <- data.frame(training)
-testing <- data.frame(testing)
+TrainingValidation <- sales_win_loss[ TrainingValidationIndex,]
+TrainingIndex <- caret::createDataPartition(TrainingValidation$Result, p = .75, 
+                                            list = FALSE, 
+                                            times = 1)
 
-# Creating dummy variables is converting a categorical variable to as many binary variables as here are categories.
-dummy_model <- caret::dummyVars(Result ~ Region + Route + SuppliesGroup + TotalDaysQualified + Competitor, data = training)
+Training <- TrainingValidation[TrainingIndex,]
+Validation <- TrainingValidation[-TrainingIndex,]
+Testing  <- sales_win_loss[-TrainingValidationIndex,]
 
-# Create the dummy variables using predict. The Y variable (Result) will not be present in trainData_mat.
-trainData_mat <- predict(dummy_model, newdata = training)
+glimpse(Training)
 
-# # Convert to dataframe
-trainData <- data.frame(trainData_mat)
-
-# # See the structure of the new dataset
-str(training)
-
-# As can be seen from the new training dataset, the categorical variables are now translated to numbers
+str(Training)
 
 
 # Set up model parameters
@@ -120,32 +97,63 @@ control <- caret::trainControl(method = "cv", number = 2, classProbs = TRUE)
 seed <- 7
 metric <- "Accuracy"
 set.seed(seed)
-mtry <- 3
-tunegrid <- expand.grid(.mtry = mtry)
 
 
-# Logistic Model
-glm_model <- caret::train(
-  Result ~ Region + Route + SuppliesGroup + TotalDaysQualified + Competitor,
-  data = training,
+# Training Logistic model using Training dataset
+GLMModel <- caret::train(
+  Result ~ .,
+  data = Training,
   method = "glm",
   trControl = control
 )
 
-summary(glm_model)
-
-pred_glm <- predict(glm_model, newdata = testing, type = "prob")
-
-summary(pred_glm)
-
-tapply(pred_glm, training$Result, mean)
+summary(GLMModel)
 
 
-conf_mat_glm <- caret::confusionMatrix(pred_glm, testing$Result, positive = "Won")
+# Training Random Forest model using Training dataset
+RFModel <- caret::train(
+  Result ~ .,
+  data = Training,
+  method = "rf",
+  trControl = control
+)
 
-conf_mat_glm
-conf_mat_glm$byClass["F1"]
+glimpse(RFModel)
 
+
+# Prediction model using validation dataset and GLMModel
+PredGLM <- predict(GLMModel, Validation)
+
+ConfMatGLM <- caret::confusionMatrix(
+  PredGLM, factor(Validation$Result), positive = "Won", mode = "everything")
+
+ConfMatGLM
+
+
+# Prediction model using validation dataset and RFModel
+PredRF <- predict(RFModel, Validation)
+
+ConfMatRF <- caret:: confusionMatrix(PredRF, factor(Validation$Result), positive = "Won", mode = "everything")
+
+ConfMatRF
+
+
+
+# Final_prediction model using GLMMOdel
+FinalPredGLM <- predict(GLMModel, Testing)
+
+ConfMatFinalGLM <- caret::confusionMatrix(FinalPredGLM, factor(Testing$Result), positive = "Won", mode = "everything")
+
+ConfMatFinalGLM
+
+
+
+# Final_prediction model using RFMOdel
+FinalPredRF <- predict(RFModel, Testing)
+
+ConfMatFinalRF <- caret::confusionMatrix(FinalPredRF, factor(Testing$Result), positive = "Won", mode = "everything")
+
+ConfMatFinalRF
 
 
 
