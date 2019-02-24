@@ -127,7 +127,8 @@ Next, we did the same thing using Random Forest model with validation data set
 
 PredRF <- predict(RFModel, Validation)
 
-ConfMatRF <- caret:: confusionMatrix(PredRF, factor(Validation$Result), positive = "Won", 
+ConfMatRF <- caret:: confusionMatrix(PredRF, factor(Validation$Result), 
+                                     positive = "Won", 
                                      mode = "everything")
 
 ConfMatRF
@@ -142,7 +143,8 @@ Because the F1 score for Random Forest model is higher than the logistic model. 
 
 FinalPredRF <- predict(RFModel, Testing)
 
-ConfMatFinalRF <- caret::confusionMatrix(FinalPredRF, factor(Testing$Result), positive = "Won", mode = "everything")
+ConfMatFinalRF <- caret::confusionMatrix(FinalPredRF, factor(Testing$Result), 
+                                         positive = "Won", mode = "everything")
 
 ConfMatFinalRF
 
