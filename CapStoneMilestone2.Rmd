@@ -13,8 +13,6 @@ How do you know which deals will close? You’ve worked your territory and leads
 
 library(tidyverse)
 library(caret)
-library(GGally)
-library(broom)
 
 sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
