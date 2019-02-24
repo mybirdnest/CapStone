@@ -315,19 +315,3 @@ sales_win_loss %>%
 
 Looking from left to right, this Scatter chart shows that irrespective of opportunity amounts, we start losing deals as they stay longer in the pipeline. This could help formulate threshold levels for each supplier based on how many days a deal is in the pipeline and create alert mechanisms to expedite its progression.
 
-````{r}
-
-sales_win_loss %>% 
-  group_by(Result, SuppliesSubgroup) %>% 
-  summarise(AvgOpp = mean(Opportunity), AvgQual = mean(TotalDaysClosing )) %>%
-  ggplot(aes(x = AvgQual, y = AvgOpp, shape = factor(Result), label = SuppliesSubgroup)) + 
-  geom_point(aes(colour = factor(Result)), size = 4) +
-  geom_point(colour = "grey90", size = 1.5) + xlab("AvgTotalDaysClosing") + ylab("AvgOpp(US$)") +
-  scale_x_continuous(breaks = seq(0, 30, 5)) + 
-  scale_y_continuous(breaks = seq(40000, 175000, 12500), labels = scales::dollar_format(prefix = "$")) +
-  geom_text(aes(label = SuppliesSubgroup,  color = Result), size = 3) + 
-  stat_ellipse(aes(color = Result), type = "t") + 
-  ggtitle("Avg Total Days Closing vs Avg Opp for SuppliesSubgroup") +
-  theme(plot.title = element_text(hjust = 0.5)) 
-
-```
