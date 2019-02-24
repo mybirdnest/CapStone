@@ -1,13 +1,26 @@
+---
+title: "Predicting Sales Win or Lose"
+author: "Herman Toeante"
+date: "February 12, 2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+## Machine Learning for predicting sales win or loss
+
+The goal of this project is to use machine learning to predict whether or not a sales lead is either win or loss and the probability of each class. This project is a supervised classification problem.
+
+Two models will be used to test the data; Logistic regression and Random Forest. These two models are part of the caret package or R. Before preparing the model, the first step is to choose the independent variable that will be used in the model.
+
+```{r message = FALSE}
 
 library(tidyverse)
 library(caret)
-library(broom)
 
-# Read the data from ./DATA folder
 sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
-
-# Rename the long columns name to make it easier
 colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", "Route",
                               "ElapsedDays", "Result","SalesStageCount",
                               "TotalDaysClosing","TotalDaysQualified",
@@ -16,70 +29,23 @@ colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", 
                               "RDaysValidated","RDaysQualified",
                               "DealSize")
 
-# Check for missing values
-map_dbl(sales_win_loss, ~sum(is.na(.)))
-
-# Note: No Missing values are identified from the data
-
-# Data Dictionary
-var_descriptions <- c(
-  "A random number assigned to the opportunity",
-  "Supplies Subgroup",
-  "Supplies Group",
-  "Region",
-  "Route to market",
-  "The number of days between the change in sales stages",
-  "A closed opportunity. Values is either won or loss",
-  "A count of number of times an opportunity changes sales stages",
-  "Total days from Identified to Gained Agreement/closing",
-  "Total days from Identified to Qualified Agreement",
-  "Sum of line item revenue estimates",
-  "Client size based on annual revenue",
-  "Client size based on number of employees",
-  "Revenue from client the past two years",
-  "An indicator whether or not competitor has been identified",
-  "Ratio of Identified/Validating over total days",
-  "Ratio of Qualified/Gaining Agreement over total days",
-  "Ratio of Validated/Qualifying over total days",
-  "Categorical grouping of the opportunity amount"
-)
-
-var <- colnames(sales_win_loss)
-var_type <- unlist(map(sales_win_loss, class))
-as_tibble(cbind(c(var, var_type, var_descriptions)))
-as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
-as_tibble(sales_win_loss)
-
-
-sales_win_loss <- sales_win_loss %>%
-  mutate(Revenue2 = case_when(
-    Revenue == 0 ~ "Rev=$0",
-    Revenue == 1 ~ "$1<=Rev<$50K",
-    Revenue == 2 ~ "$50K<=Rev<$400K",
-    Revenue == 3 ~ "$400K<=Rev<$1.5M",
-    Revenue == 4 ~ "Rev>=$1.5M"))
-
-sales_win_loss <- sales_win_loss %>%
-  mutate(Result2 = case_when(
-    Result == "Won" ~ 1,
-    Result == "Loss" ~ 0))
-
-glimpse(sales_win_loss)
-
-# Create modeling data
-# Select the data columns or independent variables to be used in modeling. 
-# Set Training, Validation, and Testing data
 
 ModelData <- sales_win_loss %>% select(SuppliesSubgroup, Region, Route, TotalDaysClosing, 
                                         TotalDaysQualified, Opportunity, ClientSizeRev, 
                                         ClientSizeCount, Competitor, DealSize, Result)
+```
 
+The next step is partitioning the data set into training, validation, and testing dataset.
+We start with the seed for reproducibility followed by using createDataPartition function from caret.
+
+```{r message = FALSE}
 
 set.seed(3456)
 TrainingValidationIndex <- caret::createDataPartition(ModelData$Result, p = .80, 
                                                       list = FALSE, 
                                                       times = 1)
 str(TrainingValidationIndex)
+
 
 TrainingValidation <- ModelData[ TrainingValidationIndex,]
 TrainingIndex <- caret::createDataPartition(TrainingValidation$Result, p = .75, 
@@ -90,15 +56,31 @@ Training <- TrainingValidation[TrainingIndex,]
 Validation <- TrainingValidation[-TrainingIndex,]
 Testing  <- ModelData[-TrainingValidationIndex,]
 
+```
+
+Using glimpse function, we can see the selected variables for the model.
+
+```{r}
+
 glimpse(Training)
 
-# Set up model parameters
+```
+
+Next, we setup the model parameter
+
+```{r message = FALSE}
+
 control <- caret::trainControl(method = "cv", number = 2, classProbs = TRUE)
 seed <- 7
 metric <- "Accuracy"
 set.seed(seed)
 
-# Training Logistic model using Training dataset
+```
+
+Training Logistic with training dataset
+
+```{r message = FALSE}
+
 GLMModel <- caret::train(
   Result ~ SuppliesSubgroup + Region + Route + TotalDaysClosing + TotalDaysQualified +
     Opportunity + ClientSizeRev + ClientSizeCount + Competitor + DealSize,
@@ -107,9 +89,12 @@ GLMModel <- caret::train(
   trControl = control
 )
 
-summary(GLMModel)
+```
 
-# Training Random Forest model using Training dataset
+Training Random Forest model with training dataset
+
+```{r message = FALSE}
+
 RFModel <- caret::train(
   Result ~ SuppliesSubgroup + Region + Route + TotalDaysClosing + TotalDaysQualified +
     Opportunity + ClientSizeRev + ClientSizeCount + Competitor + DealSize,
@@ -118,27 +103,42 @@ RFModel <- caret::train(
   trControl = control
 )
 
-glimpse(RFModel)
-summary(RFModel)
+```
 
-# Prediction model using validation dataset and GLMModel
+Using predict function from caret package, I will use the result to find the best model.
+Caret package also have the confusion matrix function to calculate sensitivity, specificity, negative predictied value, positive predicted values, and F1 score.  The F1 score is a harmonic average of precision and recall to select the best model.
+
+```{r}
 
 PredGLM <- predict(GLMModel, Validation)
 
 ConfMatGLM <- caret::confusionMatrix(
-  PredGLM, factor(Validation$Result), positive = "Won", mode = "everything")
+  PredGLM, factor(Validation$Result), positive = "Won", 
+  mode = "everything")
 
 ConfMatGLM
 
-# Prediction model using validation dataset and RFModel
+```
+
+The F1 score for the Logistic model is `r ConfMatGLM$byClass["F1"]`
+Next, we did the same thing using Random Forest model with validation data set
+
+```{r}
 
 PredRF <- predict(RFModel, Validation)
 
-ConfMatRF <- caret:: confusionMatrix(PredRF, factor(Validation$Result), positive = "Won", mode = "everything")
+ConfMatRF <- caret:: confusionMatrix(PredRF, factor(Validation$Result), positive = "Won", 
+                                     mode = "everything")
+
 ConfMatRF
 
+```
 
-# Final_prediction model using RFMOdel
+The F1 score for the Random Forest model is `r ConfMatRF$byClass["F1"]`
+
+Because the F1 score for Random Forest model is higher than the logistic model.  The randome forest model is selected as the better model. The next step is to evaluate the Random Forest model using testing dataset.
+
+```{r}
 
 FinalPredRF <- predict(RFModel, Testing)
 
@@ -146,6 +146,9 @@ ConfMatFinalRF <- caret::confusionMatrix(FinalPredRF, factor(Testing$Result), po
 
 ConfMatFinalRF
 
+```
+
+The final prediction using testing data set (`r ConfMatFinalRF$byClass["F1"]`) appears to have about the same F1 score as using the validation data set (`r ConfMatRF$byClass["F1"]`)
 
 
 

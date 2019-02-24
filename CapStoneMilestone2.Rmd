@@ -3,10 +3,9 @@ title: "Predicting Sales Win or Lose"
 author: "Herman Toeante"
 date: "February 12, 2019"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
-
 
 How do you know which deals will close? You’ve worked your territory and leads. Demonstrated the value of your product or service to your customers’ businesses and it should be a done deal. But is it? All too often, determining which customers will buy is a guessing game. You have pipeline reports, regional sales figures and wins and losses that you could analyze. Unlock the information in those sources and you’ll unlock more revenue and more satisfied customers. Better understanding of sales pipeline can help any sales team organization can expect win or lose based on data. In this project, I am going to be the sales manager at an automotive supply company. Any B2B company like GE, AMAZON, GOOGLE, ADP, etc can use the same approach that I demonstrated on this project to their sales team. As a manager, I'm trying to assess a sales execution issue.  We have not been able to convert enough opportunities lately.  As a start, I load the required packages and data for this project.
 
@@ -70,25 +69,6 @@ colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", 
 ```
 
 Moreover, I made several assumptions to translate the categorical columns into meaningful information. 
-
-
-
-<!-- df2 = data.frame(ClientSizeRev = c(1, 2, 3, 4, 5), ClientSizeRev2 = c("ClientRev<$1M", "$1M<=ClientRev<$10M", -->
-<!--                                                                       "$10M<=ClientRev<$50M", "$50M<=ClientRev<$100M", -->
-<!--                                                                   "ClientRev>=$100M")) -->
-
-<!-- df3 = data.frame(ClientSizeCount = c(1, 2, 3, 4, 5), ClientSizeCount2 = c("Count<1K", "1K<=Count<5K", -->
-<!--                                                                           "5K<=Count<10K","10K<=Count<30K", -->
-<!--                                                                           "Count>=30K")) -->
-
-<!-- df4 = data.frame(Revenue = c(1, 2, 3, 4, 5), Revenue2 = c("Rev=$0", "$1<=Rev<$50K","$50K<=Rev<$400K","$400K<=Rev<$1.5M", -->
-<!--                                                           "Rev>=$1.5M")) -->
-
-
-<!-- join(sales_win_loss, df2, by = "ClientSizeRev") -->
-<!-- join(sales_win_loss, df3, by = "ClientSizesCount") -->
-<!-- join(sales_win_loss, df4, by = "Revenue") -->
-
 
 ```{r message = FALSE}
 
@@ -165,7 +145,6 @@ ggplot(sales_win_loss, aes(x = Result, color = Result, fill = Result)) +
 
 From the chart, we have ~18K records of 'Won' sales leads and ~60K 'Loss" sales leads for the last two years. Using this data, it looks the high number of loss opprotunity could be attributed to business condition or we can explore deeper into the data set if there are variables that affecting the loss opportunity.
 
-
 ```{r}
 
 position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K", "$400K<=Rev<$1.5M", "Rev>=$1.5M")
@@ -198,7 +177,6 @@ ggplot(sales_win_loss) +
 
 I can see that the probability of loss opportunity is higher if customer didn't buy anything in the last two years. If client purchase in the last two years, the chance of win decreases as sales deals rises
 
-
 ``` {r}
 
 sales_win_loss %>% 
@@ -214,7 +192,6 @@ sales_win_loss %>%
 
 From the chart above, it's clear that the field sales and reseller are the most common channel of sales route to market across all regions.  In the pacific region, other sales channel also play some role to bring in revenue in comparison to other regions. I want to see the breakdown of the 'Loss' opportunity by each region to dig deeper. The subsequent charts will show the break down of the supplies subgroup for each region where sales lead is 'Loss' 
 
-
 ```{r}
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
@@ -229,7 +206,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Mid-Atlantic") %>%
 ```
 
 The chart above show the Mid-Atlantic region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity.  
-
 
 ```{r}
 
@@ -259,7 +235,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northeast") %>%
 
 ```
 
-
 The chart above show the Northeast region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV" and "Motorcycle Parts"" are the main supplies subgroup that contribute to the loss opportunity. 
 
 ```{r}
@@ -274,7 +249,6 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Northwest") %>%
   theme(plot.title = element_text(hjust = 0.5)) 
 
 ```
-
 
 The chart above show the Northwest region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
 
@@ -291,8 +265,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Pacific") %>%
 
 ```
 
-
 The chart above show the Pacific region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
+
 ```{r}
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
@@ -306,8 +280,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southeast") %>%
 
 ```
 
-
 The chart above show the MidWest region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
+
 ```{r}
 
 sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
@@ -321,8 +295,8 @@ sales_win_loss %>% filter(Result == "Loss" & Region == "Southwest") %>%
 
 ```
 
-
 The chart above show the SouthWest region breakdown of loss opportunity by supplies subgroup.  In this region, "Shelters & RV",  Batteries & Accessories", and "Exterior Accessories" are the main supplies subgroup that contribute to the loss opportunity. 
+
 ````{r}
 
 sales_win_loss %>% 
@@ -340,59 +314,4 @@ sales_win_loss %>%
 
 ```
 
-
 Looking from left to right, this Scatter chart shows that irrespective of opportunity amounts, we start losing deals as they stay longer in the pipeline. This could help formulate threshold levels for each supplier based on how many days a deal is in the pipeline and create alert mechanisms to expedite its progression.
-
-
-````{r}
-
-sales_win_loss %>% 
-  group_by(Result, SuppliesSubgroup) %>% 
-  summarise(AvgOpp = mean(Opportunity), AvgQual = mean(TotalDaysClosing )) %>%
-  ggplot(aes(x = AvgQual, y = AvgOpp, shape = factor(Result), label = SuppliesSubgroup)) + 
-  geom_point(aes(colour = factor(Result)), size = 4) +
-  geom_point(colour = "grey90", size = 1.5) + xlab("AvgTotalDaysClosing") + ylab("AvgOpp(US$)") +
-  scale_x_continuous(breaks = seq(0, 30, 5)) + 
-  scale_y_continuous(breaks = seq(40000, 175000, 12500), labels = scales::dollar_format(prefix = "$")) +
-  geom_text(aes(label = SuppliesSubgroup,  color = Result), size = 3) + 
-  stat_ellipse(aes(color = Result), type = "t") + 
-  ggtitle("Avg Total Days Closing vs Avg Opp for SuppliesSubgroup") +
-  theme(plot.title = element_text(hjust = 0.5)) 
-
-```
-
-
-# Revenue calculations: is it before or after closing
-
-# Clustering, select independent variables, don't select the dependent variable
-# Run clustering algorithm
-# its going to return a vector given name cluster_id added to data frame
-# convert cluster_id column to factor using the factor function
-
-
-
-# Modeling
-
-## Create modeling data
-
-
-How to setup logistic regression, and random forest for classification problems?
-
-
-
-Go to student dashboard , read final steps , let them know one week in advance
-complete the mini projects
-make sure the link works
-Same the CapStone link works
-CapStone rubrik for grading - google sheet
-  
-
-
-
-
-
-
-
-
-How to setup clustering k-means for this problem?
-
