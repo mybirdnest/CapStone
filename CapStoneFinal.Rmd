@@ -7,7 +7,7 @@ output:
   html_document: default
 ---
 
-How do you know which deals will close? You’ve worked your territory and leads. Demonstrated the value of your product or service to your customers’ businesses and it should be a done deal. But is it? All too often, determining which customers will buy is a guessing game. You have pipeline reports, regional sales figures and wins and losses that you could analyze. Unlock the information in those sources and you’ll unlock more revenue and more satisfied customers. Better understanding of sales pipeline can help any sales team organization can expect win or lose based on data. In this project, I am going to be the sales manager at an automotive supply company. Any B2B company like GE, AMAZON, GOOGLE, ADP, etc can use the same approach that I demonstrated on this project to their sales team. As a manager, I'm trying to assess a sales execution issue.  We have not been able to convert enough opportunities lately.  As a start, I load the required packages and data for this project.
+How do you know which deals will close? You’ve worked your territory and leads. Demonstrated the value of your product or service to your customers’ businesses and it should be a done deal. But is it? All too often, determining which customers will buy is a guessing game. You have pipeline reports, regional sales figures and wins and losses that you could analyze. Unlock the information in those sources and you’ll unlock more revenue and more satisfied customers. Better understanding of sales pipeline can help any sales team organization can expect win or lose based on data. In this project, I am going to be the sales manager at an automotive supply company. Any B2B company like GE, AMAZON, GOOGLE, ADP, etc can use the same approach that I demonstrated on this project to their sales team. As a manager, I'm trying to assess a sales execution issue. We have not been able to convert enough opportunities lately.  As a start, we start by loading the required packages and data for this project.
 
 ```{r message = FALSE}
 
@@ -20,23 +20,19 @@ sales_win_loss <- read_csv("DATA/WA_Fn-UseC_-Sales-Win-Loss.csv")
 
 Data for this project is publicly available from Wattson Analytic sample data. 
 (https://community.watsonanalytics.com/wp-content/uploads/2015/04/WA_Fn-UseC_-Sales-Win-Loss.csv) 
-The csv file contains 78K row of data and 19 columns.  Each row is assigned a unique sales opportunity ID.  The dependent variable is 'Opportunity Result' column with values of either 'Won' or 'Loss'  There are several independent variables from the sample data that I can use such as: 'Supplies Group', 'Region',	'Route To Market',	'Elapsed Days In Sales Stage',	'Opportunity Result', 'Sales Stage Change Count',	'Total Days Identified Through Closing',	'Total Days Identified Through Qualified',	'Opportunity Amount USD',	'Client Size By Revenue',	'Client Size By Employee Count',	'Revenue From Client Past Two Years',	and 'Competitor Type.' I use 'glimpse' and 'head' to understand the data structure of my sample data.
+The csv file contains 78K row of data and 19 columns.  Each row is assigned a unique sales opportunity ID.  The dependent variable is 'Opportunity Result' column with values of either 'Won' or 'Loss'  There are several independent variables from the sample data that I can use such as: 'Supplies Group', 'Region',	'Route To Market',	'Elapsed Days In Sales Stage',	'Opportunity Result', 'Sales Stage Change Count',	'Total Days Identified Through Closing',	'Total Days Identified Through Qualified',	'Opportunity Amount USD',	'Client Size By Revenue',	'Client Size By Employee Count',	'Revenue From Client Past Two Years',	and 'Competitor Type.' We use 'glimpse' and 'head' to understand the data structure of the data.
 
 ```{r message = FALSE}
 
 glimpse(sales_win_loss, give.attr = FALSE)
-
 summary(sales_win_loss)
-
 head(sales_win_loss[, 1:6])
-
 head(sales_win_loss[, 7:13])
-
 head(sales_win_loss[, 14:19])
 
 ```
 
-I checked for missing values of my dataset
+We have to make sure there is no missing data by checking for missing values of the dataset
 
 ```{r}
 
@@ -52,7 +48,7 @@ theme_set(theme_minimal() + theme(legend.position = "bottom"))
 
 ```
 
-For better data visualization on the chart, I rename the columns with long name.  
+For better data visualization on the chart and easier to remember, we have to rename the columns with long name.  
 
 ```{r message = FALSE}
 
@@ -66,7 +62,7 @@ colnames(sales_win_loss) <- c("ID","SuppliesSubgroup","SuppliesGroup","Region", 
 
 ```
 
-Moreover, I made several assumptions to translate the categorical columns into meaningful information. 
+Moreover, we have to make several assumptions to translate the categorical columns into meaningful information. 
 
 ```{r message = FALSE}
 
@@ -126,7 +122,6 @@ var <- colnames(sales_win_loss)
 var_type <- unlist(map(sales_win_loss, class))
 as_tibble(cbind(c(var, var_type, var_descriptions)))
 as_data_frame(cbind(c(1:length(var)), var, var_type, var_descriptions))
-as_tibble(sales_win_loss)
 
 ```
 
@@ -141,7 +136,7 @@ ggplot(sales_win_loss, aes(x = Result, color = Result, fill = Result)) +
 
 ```
 
-From the chart, we have ~18K records of 'Won' sales leads and ~60K 'Loss" sales leads for the last two years. Using this data, it looks the high number of loss opprotunity could be attributed to business condition or we can explore deeper into the data set if there are variables that affecting the loss opportunity.
+From the chart, we have ~18K records of 'Won' sales leads and ~60K 'Loss" sales leads for the last two years. Using this data, it looks the high number of loss opportunity could be attributed to business condition or we can explore deeper into the data set if there are variables that affecting the loss opportunity.
 
 ```{r}
 
@@ -157,7 +152,7 @@ position <- c("Rev=$0", "$1<=Rev<$50K", "$50K<=Rev<$400K",
 
 ```
 
-From the chart, we can see for the last two years, there are plenty of sales leads opportunity A lot sales leads opportunity that resulted in $0 revenue for the last two years. 
+From the chart, we can see for the last two years, there are plenty of sales leads opportunity for the last two years. The one that resulting in $0 revenue is mainly the 'Loss' opportunity leads.  The 'Won' opportunity that resulted in $0 revenue is possibly due to customer canceling the sales at the last minute.
 
 ```{r}
 
@@ -174,7 +169,7 @@ ggplot(sales_win_loss) +
 
 ```
 
-I can see that the probability of loss opportunity is higher if customer didn't buy anything in the last two years. If client purchase in the last two years, the chance of win decreases as sales deals rises
+We can see that the probability of loss opportunity is higher if customer didn't buy anything in the last two years. If client purchase in the last two years, the chance of win decreases as sales deals rises
 
 ``` {r}
 
@@ -332,7 +327,8 @@ Looking from left to right, this Scatter chart shows that irrespective of opport
 ### Create Modeling Data
 
 The next step is partitioning the data set into training, validation, and testing dataset.
-We start with the seed for reproducibility followed by using createDataPartition function from caret.
+We start with setting seed for reproducibility followed by using createDataPartition function from caret.
+For the 'ModelData', we have selected several columns from the original 19 available columns. The selection of which columns that got selected is based on the EDA phase where we've seen impact of these independent variables on the dependent variables.
 
 ```{r message = FALSE}
 
@@ -409,8 +405,8 @@ RFModel <- caret::train(
 
 ### Predicting the model using validation data set
 
-Using predict function from caret package, I will use the result to find the best model.
-Caret package also have the confusion matrix function to calculate sensitivity, specificity, negative predictied value, positive predicted values, and F1 score.  The F1 score is a harmonic average of precision and recall to select the best model.
+Using predict function from caret package, we can use the result to find the best model.
+Caret package also have the confusion matrix function to calculate sensitivity, specificity, negative predictied value, positive predicted values, and F1 score.  The F1 score is a harmonic average of precision and recall to select the best model. We use F1 score not accuracy because accuracy can be largely contributed by a large number of True Negatives which in most business circumstances, we do not focus on much whereas False Negative and False Positive usually has business costs (tangible & intangible) thus F1 Score might be a better measure to use if we need to seek a balance between Precision and Recall and there is an uneven class distribution (large number of Actual Negatives).
 
 ```{r}
 
@@ -442,7 +438,6 @@ ConfMatRF
 ### Selecting the best model
 
 The F1 score for the Random Forest model is `r ConfMatRF$byClass["F1"]`
-
 Because the F1 score for Random Forest model is higher than the logistic model.  The randome forest model is selected as the better model. The next step is to evaluate the Random Forest model using testing dataset.
 
 ```{r}
@@ -460,19 +455,32 @@ ConfMatFinalRF
 
 The final prediction using testing data set (`r ConfMatFinalRF$byClass["F1"]`) appears to have about the same F1 score as using the validation data set (`r ConfMatRF$byClass["F1"]`)
 
-
 ### Recommendations
 
-From the exploratory data analysis, it looks like the company start losing deals as the sales lead stays longer in the pipeline more than 10 days.  Using this information, the sales team should be able to formulate threshold levels for each supplier based on how many days a deal is in the pipeline and create alert mechanisms to expedite its progression.  
+1. From the exploratory data analysis, it looks like the company start losing deals as the sales lead stays longer in the pipeline more than 12 days.  Using this information, the sales team should be able to formulate threshold levels for each supplier based on how many days a deal is in the pipeline and create alert mechanisms to expedite its progression.  
 
-More depth machine learning model should also be done.  Especially learning the interaction of other independent variables such as RDaysValidated and RDaysQualified. The current Random Forest model accuracy is (`r ConfMatFinalRF$byClass["Accuracy"]`) Other regression model such as clustering k-means model or other classification model that can produce higher accuracy should be explored. 
+2. More depth machine learning model should also be done.  Especially learning the interaction of other independent variables such as RDaysValidated and RDaysQualified. 
 
+3.The current Random Forest model F1 score is `r ConfMatFinalRF$byClass["F1"]` Other regression model such as clustering k-means model or other classification model that can produce higher accuracy should be explored. 
+
+4.As someone who is going to need a new prediction, the variable such as TotalDaysClosing or TotalDaysQualified are moving variable as days have passed until the present time.  In order to use the prediction model, based on the two years data, the user need to be aware of these type of variable.  The data below provide some additional insight for these two variables.
+
+```{r}
+
+sales_win_loss %>% filter(Opportunity > 0) %>%
+  group_by(Result) %>% 
+  summarise(AvgTotalDaysClose = mean(TotalDaysClosing),
+            AvgTotalDaysQualify = mean(TotalDaysQualified),
+            MaxTotalDaysClose = max(TotalDaysClosing),
+            MaxTotalDaysQualify = max(TotalDaysQualified),
+            MedianDaysClose = median(TotalDaysClosing),
+            MedianDaysQualify = median(TotalDaysQualified))
+
+```
 
 ## Acknowledgements
 
 Many thanks to Mike Badescu, my mentor throughout my learning process of Introduction to Data Science class. Appreciate his unending patience, tips, and code snippets.
-
-
 
 
 
