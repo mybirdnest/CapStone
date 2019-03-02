@@ -416,7 +416,7 @@ ConfMatGLM
 
 ```
 
-The F1 score for the Logistic model is `r format(ConfMatGLM$byClass["F1"], digits = 4)`.
+The F1 score for the Logistic model is `r format(ConfMatGLM$byClass["F1"], digits = 4, nsmall = 4)`.
 Next, we did the same thing using Random Forest model with validation data set
 
 ```{r}
@@ -433,7 +433,7 @@ ConfMatRF
 
 ### Selecting the best model
 
-The F1 score for the Random Forest model is `r format(ConfMatRF$byClass["F1"], digits = 4)`.
+The F1 score for the Random Forest model is `r format(ConfMatRF$byClass["F1"], digits = 4, nsmall = 4)`.
 Because the F1 score for Random Forest model is higher than the logistic model.  The random forest model is selected as the better model. The next step is to evaluate the Random Forest model using testing dataset.
 
 ```{r}
@@ -449,7 +449,7 @@ ConfMatFinalRF
 
 ### Testing the final model
 
-The final prediction using testing data set(`r format(ConfMatFinalRF$byClass["F1"], digits = 4)`) appears to have about the same F1 score as using the validation data set(`r format(ConfMatRF$byClass["F1"], digits = 4)`).
+The final prediction using testing data set(`r format(ConfMatFinalRF$byClass["F1"], digits = 4, nsmall = 4)`) appears to have about the same F1 score as using the validation data set(`r format(ConfMatRF$byClass["F1"], digits = 4, nsmall = 4)`).
 
 As someone who is going to need a new prediction, the variable such as TotalDaysClosing or TotalDaysQualified are moving variable as days have passed until the present time.  In order to use the prediction model, based on the two years data, the user need to be aware of these type of variable.  The data below provide some additional insight for these two variables.
 
@@ -473,7 +473,7 @@ longer in the pipeline more than 12 days.  Using this information, the sales tea
 
 2. More depth machine learning model should also be done.  Especially learning the interaction of other independent variables such as RDaysValidated and RDaysQualified. 
 
-3. The current Random Forest model F1 score is `r format(ConfMatFinalRF$byClass["F1"], digits = 4)`. Other classification model such as clustering k-means or other classification model that can produce higher accuracy should be explored.
+3. The current Random Forest model F1 score is `r format(ConfMatFinalRF$byClass["F1"], digits = 4, nsmall = 4)`. Other classification model such as clustering k-means or other classification model that can produce higher accuracy should be explored.
 
 ## Acknowledgements
 
